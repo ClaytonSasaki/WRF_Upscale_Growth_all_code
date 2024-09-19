@@ -86,7 +86,7 @@ ax[1].imshow(arr, interpolation='nearest', cmap=new_cmap2)
 
 # ----------------- reading in file/plotting terrain -----------------
 
-outpath = '/home/disk/meso-home/crs326/Documents/Research/WRF_Upscale_Growth_Paper/'
+outpath = '/home/disk/meso-home/crs326/Documents/Research/WRF_Upscale_Growth_Paper/Composite_shear_maps_by_SALLJ_presence/'
 
 # Open the NetCDF file
 path_wrf = '/home/disk/monsoon/relampago/raw/wrf/'
