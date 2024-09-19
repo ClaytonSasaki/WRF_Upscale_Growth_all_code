@@ -1,13 +1,15 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
-Created on wed Nov 17 14:16:04 2021
+Created on wed Sep 13 2024
 
 @author: crs326
 
-Based upon maps_v2.py in the folder old
+Creates .dat files and plots of composite shear for all SALLJ times
 
-Makes maps that show points that meet the SALLJ criteria and the height at which the criteria is met from the PNNL WRF.
+Based upon 'relaxed_SALLJ_spatial_map_frequency_efficient_v4.py', 'plot_only_SALLJ_spatial_map_frequency_efficient_v4.py', 'plot_only_relaxed_SALLJ_distributions_by_height.py' among other files
+
+Uses '3relaxed_SALLJ_times_VMRS_1101_0430.dat' file copied over. See README for more.
 
 """
 

@@ -1,13 +1,16 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
-Created on wed Nov 17 14:16:04 2021
+Created on wed Sep 16 2024
 
 @author: crs326
 
-Based upon maps_v2.py in the folder old
+ONLY plots of composite shear for all SALLJ times
 
-Makes maps that show points that meet the SALLJ criteria and the height at which the criteria is met from the PNNL WRF.
+Based upon 'composite_map_shear_subset_of_SALLJ_times.py'
+
+Has been updated to allow plotting of wind shear over various layers.
+
 
 """
 
