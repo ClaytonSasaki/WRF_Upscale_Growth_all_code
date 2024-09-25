@@ -120,9 +120,10 @@ SALLJ_location = 'VMRS'
 Calculate = True
 Plot = True
 
-subset_by_SALLJ_heigth_above = 1750 # meters
+subset_by_SALLJ_height_cutoff = 1750 # meters
+subset_by_SALLJ_height_above_or_below = 'above'
 
-shear_layer = '0_3km'
+shear_layer = '2_6km'
 
 ################################# plot #################################
 
@@ -172,7 +173,7 @@ if Plot == True:
 
     print('plotted terrain')
 
-    mean_variable_spatial_SALLJ_times = pickle.load(open("mean_%s_shear_subset_peak_below_%sm_SALLJ_times_%s_%s.dat" %(shear_layer, subset_by_SALLJ_heigth_above, start_date, end_date), "rb"))
+    mean_variable_spatial_SALLJ_times = pickle.load(open("mean_%s_shear_subset_peak_%s_%sm_SALLJ_times_%s_%s.dat" %(shear_layer, subset_by_SALLJ_height_above_or_below, subset_by_SALLJ_height_cutoff, start_date, end_date), "rb"))
 
     mean_variable_spatial_SALLJ_times_smooth = smooth2d(mean_variable_spatial_SALLJ_times, 6, cenweight=4)
 
@@ -186,7 +187,7 @@ if Plot == True:
 
     print('saving')
 
-    plt.savefig(outpath + 'shear_%s_composite_map_subset_peak_below_%sm_SALLJ_times_%s_%s_%s.png' %(shear_layer, subset_by_SALLJ_heigth_above, start_date, end_date, SALLJ_location))
+    plt.savefig(outpath + 'shear_%s_composite_map_subset_peak_%s_%sm_SALLJ_times_%s_%s_%s.png' %(shear_layer, subset_by_SALLJ_height_above_or_below, subset_by_SALLJ_height_cutoff, start_date, end_date, SALLJ_location))
 
     print('saved')
 
