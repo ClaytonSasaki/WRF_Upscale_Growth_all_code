@@ -11,6 +11,8 @@ Based upon 'relaxed_SALLJ_spatial_map_frequency_efficient_v4.py', 'plot_only_SAL
 
 Uses '3relaxed_SALLJ_times_VMRS_1101_0430.dat' file copied over. See README for more.
 
+Has been updated to save wind shear over various layers.
+
 """
 
 import matplotlib
@@ -116,8 +118,15 @@ input_end_day = pd.to_datetime(str(end_date), format='%Y%m%d', errors='ignore')
 
 SALLJ_location = 'VMRS'
 
-Calculate = False
+Calculate = True
 Plot = True
+
+shear_top_pres1 = 500
+
+shear_top_pres2 = 700
+
+shear_top_pres3 = 500
+shear_bot_pres3 = 800
 
 if Calculate == True:
 
@@ -127,8 +136,14 @@ if Calculate == True:
 
     SALLJ_time_list_arr_dt = [datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S') for date in SALLJ_time_list_arr]
 
-    variable_spatial_SALLJ_times = np.empty((1356, 499, 599)) # 1356 should be replaced with len(SALLJ_time_list)
-    variable_spatial_SALLJ_times[:] = np.NaN
+    variable1_spatial_SALLJ_times = np.empty((len(SALLJ_time_list_arr_dt), 499, 599))
+    variable1_spatial_SALLJ_times[:] = np.NaN
+    
+    variable2_spatial_SALLJ_times = np.empty((len(SALLJ_time_list_arr_dt), 499, 599))
+    variable2_spatial_SALLJ_times[:] = np.NaN
+    
+    variable3_spatial_SALLJ_times = np.empty((len(SALLJ_time_list_arr_dt), 499, 599))
+    variable3_spatial_SALLJ_times[:] = np.NaN
 
     SALLJ_count = 0
 
@@ -251,25 +266,44 @@ if Calculate == True:
 
         #################### get winds at chosen heights
 
-        level = 500
-
-        u_level = np.squeeze(interplevel(u, pres, level))
-        v_level = np.squeeze(interplevel(v, pres, level))
+        u_level1 = np.squeeze(interplevel(u, pres, shear_top_pres1))
+        v_level1 = np.squeeze(interplevel(v, pres, shear_top_pres1))
+        
+        u_level2 = np.squeeze(interplevel(u, pres, shear_top_pres2))
+        v_level2 = np.squeeze(interplevel(v, pres, shear_top_pres2))
+        
+        u_level3 = np.squeeze(interplevel(u, pres, shear_top_pres3))
+        v_level3 = np.squeeze(interplevel(v, pres, shear_top_pres3))
+        
+        u_level3_bot = np.squeeze(interplevel(u, pres, shear_bot_pres3))
+        v_level3_bot = np.squeeze(interplevel(v, pres, shear_bot_pres3))
 
         u_sfc = np.squeeze(u[3, :, :])
         v_sfc = np.squeeze(v[3, :, :])
 
-        u_diff = u_level - u_sfc
-        v_diff = v_level - v_sfc
+        u_diff1 = u_level1 - u_sfc
+        v_diff1 = v_level1 - v_sfc
 
-        mag_diff = np.sqrt(u_diff**2 + v_diff**2)
+        mag_diff1 = np.sqrt(u_diff1**2 + v_diff1**2)
+        
+        u_diff2 = u_level2 - u_sfc
+        v_diff2 = v_level2 - v_sfc
+
+        mag_diff2 = np.sqrt(u_diff2**2 + v_diff2**2)
+        
+        u_diff3 = u_level3 - u_level3_bot
+        v_diff3 = v_level3 - v_level3_bot
+
+        mag_diff3 = np.sqrt(u_diff3**2 + v_diff3**2)
 
         #smooth_mag_diff = smooth2d(mag_diff, 10)
 
         #mask = terrain <= 3000
         #mag_diff_terrainLess3000 = np.where(mask, mag_diff, np.nan)
 
-        variable_spatial_SALLJ_times[SALLJ_count,:,:] = mag_diff
+        variable1_spatial_SALLJ_times[SALLJ_count,:,:] = mag_diff1
+        variable2_spatial_SALLJ_times[SALLJ_count,:,:] = mag_diff2
+        variable3_spatial_SALLJ_times[SALLJ_count,:,:] = mag_diff3
 
         #mean_variable_spatial_SALLJ_times = np.nanmean(variable_spatial_SALLJ_times, axis=0)
 
@@ -277,11 +311,23 @@ if Calculate == True:
 
         #print(variable_spatial_SALLJ_times[:,0,0])
         #print(mean_variable_spatial_SALLJ_times)
+        
+        ncfile.close()
 
-    mean_variable_spatial_SALLJ_times = np.nanmean(variable_spatial_SALLJ_times, axis=0)
-    print(mean_variable_spatial_SALLJ_times)
+    mean_variable1_spatial_SALLJ_times = np.nanmean(variable1_spatial_SALLJ_times, axis=0)
+    print(mean_variable1_spatial_SALLJ_times)
 
-    pickle.dump(mean_variable_spatial_SALLJ_times, open("mean_%s_SALLJ_times_%s_%s.dat" %('0_6km_shear', start_date, end_date), "wb"))
+    pickle.dump(mean_variable1_spatial_SALLJ_times, open("mean_%s_SALLJ_times_%s_%s.dat" %('0_6km_shear', start_date, end_date), "wb"))
+    
+    mean_variable2_spatial_SALLJ_times = np.nanmean(variable2_spatial_SALLJ_times, axis=0)
+    print(mean_variable2_spatial_SALLJ_times)
+
+    pickle.dump(mean_variable2_spatial_SALLJ_times, open("mean_%s_SALLJ_times_%s_%s.dat" %('0_3km_shear', start_date, end_date), "wb"))
+    
+    mean_variable3_spatial_SALLJ_times = np.nanmean(variable3_spatial_SALLJ_times, axis=0)
+    print(mean_variable3_spatial_SALLJ_times)
+
+    pickle.dump(mean_variable3_spatial_SALLJ_times, open("mean_%s_SALLJ_times_%s_%s.dat" %('2_6km_shear', start_date, end_date), "wb"))
 
 ################################# plot #################################
 
