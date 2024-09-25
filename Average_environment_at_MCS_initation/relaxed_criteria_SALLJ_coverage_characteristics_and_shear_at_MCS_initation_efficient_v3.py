@@ -27,6 +27,7 @@ import matplotlib.dates as mdates
 import numpy as np
 import numpy.ma as ma
 from numpy import exp,where,ma,cos,sin,pi,amax,amin
+import pickle
 import pandas as pd
 import os
 from scipy import stats
@@ -119,6 +120,18 @@ MCS_center_lats_init_filt_by_loc_and_start_type = MCS_center_lats_initiation_flo
 
 num_MCS_init_region_and_new_MCS = len(MCS_datetime_init_filt_by_loc_and_start_type_str)
 print('# of MCSs within chosen region and new MCS: ', num_MCS_init_region_and_new_MCS)
+
+##### compare MCS times to SALLJ times ###
+#
+#print('dates of MCS init filtered by location and start type: ', MCS_datetime_init_filt_by_loc_and_start_type_str)
+#
+#SALLJ_time_list = pickle.load(open("/home/disk/meso-home/crs326/Documents/Research/WRF_Upscale_Growth_Paper/Composite_shear_maps_by_SALLJ_presence/3relaxed_SALLJ_times_%s_%s_%s.dat" %('VMRS', '20181101', '20190430'), "rb"))
+#
+#SALLJ_time_list_arr = np.array([str(SALLJ_time) for SALLJ_time in SALLJ_time_list])
+#
+#SALLJ_time_list_arr_dt = [datetime.strptime(date, '%Y-%m-%d %H:%M:%S') for date in SALLJ_time_list_arr]
+#
+#print('dates of SALLJ at VMRS: ', SALLJ_time_list_arr_dt)
 
 # close the MCS tracks file
 MCS_tracks_ncfile.close()
