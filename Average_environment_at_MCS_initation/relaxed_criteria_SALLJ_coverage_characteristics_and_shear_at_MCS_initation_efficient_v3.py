@@ -43,7 +43,7 @@ from wrf import (to_np, getvar, smooth2d, get_cartopy, cartopy_xlim,
 MCS_tracks_file_path = '/home/disk/monsoon/relampago/analysis//mcs_tracks/wrf/stats/mcs_tracks_pf_20181015_20190430.nc'
 MCS_tracks_ncfile = Dataset(MCS_tracks_file_path,'r')
 
-offset_MCS_and_conditions = True
+offset_MCS_and_conditions = False
 
 hours_offset = -1
 
@@ -142,11 +142,11 @@ MCS_tracks_ncfile.close()
 for MCS_datetime, MCS_center_lon, MCS_center_lat in zip(MCS_datetime_init_filt_by_loc_and_start_type_str, MCS_center_lons_init_filt_by_loc_and_start_type, MCS_center_lats_init_filt_by_loc_and_start_type):
 
     # get lats/lons of region based on centroid
-    lat_bottom_left = MCS_center_lat - 0.75 
-    lon_bottom_left = MCS_center_lon - 0.75
+    lat_bottom_left_env = MCS_center_lat - 0.75 
+    lon_bottom_left_env = MCS_center_lon - 0.75
                                    
-    lat_top_right = MCS_center_lat + 0.75 
-    lon_top_right = MCS_center_lon + 0.75
+    lat_top_right_env = MCS_center_lat + 0.75 
+    lon_top_right_env = MCS_center_lon + 0.75
 
     # get the file necessary
     path_wrf = '/home/disk/monsoon/relampago/raw/wrf/'                  
@@ -185,9 +185,14 @@ for MCS_datetime, MCS_center_lon, MCS_center_lat in zip(MCS_datetime_init_filt_b
     max_wind_threshold = crit[3]
     decrease_to_min_threshold = crit[4]
     
+    lat_bottom_left_SALLJ = -30
+    lon_bottom_left_SALLJ = -65
+    lat_top_right_SALLJ = -28
+    lon_top_right_SALLJ = -60
+    
     # get xy for regions
-    bottom_left_xy = ll_to_xy(wrf_ncfile, lat_bottom_left, lon_bottom_left)
-    top_right_xy = ll_to_xy(wrf_ncfile, lat_top_right, lon_top_right) 
+    bottom_left_xy = ll_to_xy(wrf_ncfile, lat_bottom_left_SALLJ, lon_bottom_left_SALLJ)
+    top_right_xy = ll_to_xy(wrf_ncfile, lat_top_right_SALLJ, lon_top_right_SALLJ) 
 
     ############################# read in some variables #############################
     #print('reading in variables')
@@ -367,6 +372,8 @@ for MCS_datetime, MCS_center_lon, MCS_center_lat in zip(MCS_datetime_init_filt_b
     #print('num points', num_total_points)
     
     proporation_SALLJ = num_points_SALLJ/num_total_points
+    
+    print('proporation coverage: ', proporation_SALLJ)
     
     if proporation_SALLJ >= 0.3:
         
