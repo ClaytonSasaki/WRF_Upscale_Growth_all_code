@@ -43,6 +43,10 @@ from wrf import (to_np, getvar, smooth2d, get_cartopy, cartopy_xlim,
 MCS_tracks_file_path = '/home/disk/monsoon/relampago/analysis//mcs_tracks/wrf/stats/mcs_tracks_pf_20181015_20190430.nc'
 MCS_tracks_ncfile = Dataset(MCS_tracks_file_path,'r')
 
+MCS_init_location_filter = True
+
+MCS_start_type_filter = True
+
 offset_MCS_and_conditions = False
 
 hours_offset = -1
@@ -62,8 +66,8 @@ MCS_datetime_initiation_str = np.array([bytes(bytes_for_one_time).decode('UTF-8'
 #print([b''.join(row).decode('UTF-8') for row in datetime_bytes])
 
 # gets the MCS center lons and lats (nmaxpf chosen to be 0, NOTE: not sure what nmaxpf is?????????)
-MCS_center_lons = MCS_tracks_ncfile.variables['pf_lon'][:,:,0]
-MCS_center_lats = MCS_tracks_ncfile.variables['pf_lat'][:,:,0]
+MCS_center_lons = MCS_tracks_ncfile.variables['meanlon']
+MCS_center_lats = MCS_tracks_ncfile.variables['meanlat']
 
 # get MCS initation center lons and lats
 MCS_center_lons_initiation = MCS_center_lons[:,0]
@@ -72,54 +76,77 @@ MCS_center_lats_initiation = MCS_center_lats[:,0]
 #print(MCS_time_initation_str)
 #print(MCS_center_lons_initation)
 #print(MCS_center_lats_initation)
-print('dates of MCS init \n', MCS_datetime_initiation_str)
-print('lons of MCS init \n', MCS_center_lons_initiation)
-print('lats of MCS init \n', MCS_center_lats_initiation)
+#print('dates of MCS init \n', MCS_datetime_initiation_str)
+#print('lons of MCS init \n', MCS_center_lons_initiation)
+#print('lats of MCS init \n', MCS_center_lats_initiation)
 
-######### filter MCS tracks by centroid location ######### 
+######### create filter MCS tracks by centroid location ######### 
 
 # save MCS initation times and centroid locations of those within defined box near the SDC
 lon_min = -66.25
 lon_max = -61.1
 lat_min = -34.0
 lat_max = -29.5
+        
+condition_lat_min = lat_min <= MCS_center_lats_initiation
+condition_lat_max = MCS_center_lats_initiation <= lat_max
+condition_lon_min = lon_min <= MCS_center_lons_initiation
+condition_lon_max = MCS_center_lons_initiation <= lon_max
 
-location_filtered_indices = []
+######### creat filter MCS tracks by MCS start type ######### 
 
-for index, (lat, lon) in enumerate(zip( MCS_center_lats_initiation, MCS_center_lons_initiation)):
-    #print('lat', lat)
-    #print('lon', lon)
-    #print(lat_min <= lat <= lat_max)
-    #print(lon_min <= lon <= lon_max)
-    if lat_min <= lat <= lat_max and lon_min <= lon <= lon_max:
-        #print('yes')
-        location_filtered_indices.append(index)
-    else:
-        pass
-        #print('no')
+MCS_start_type = np.array(MCS_tracks_ncfile.variables['starttrackresult'])
+
+condition_start_type = MCS_start_type == 10
+
+######### fitler MCS tracks by chosen filters ######### 
+
+if(MCS_init_location_filter == True) and (MCS_start_type_filter == False):
+
+    mask = condition_lat_min & condition_lat_max & condition_lon_min & condition_lon_max
+    
+    filter_label = '_filtered_init_loc'
+    
+if(MCS_init_location_filter == False) and (MCS_start_type_filter == True):
+
+    mask = condition_start_type
+    
+    filter_label = '_filtered_start_type'
+    
+if(MCS_init_location_filter == True) and (MCS_start_type_filter == True):
+
+    mask = condition_lat_min & condition_lat_max & condition_lon_min & condition_lon_max & condition_start_type
+    
+    filter_label = '_filtered_init_loc_and_start_type'
+    
+if(MCS_init_location_filter == False) and (MCS_start_type_filter == False):
+
+    mask = np.full(shape=len(MCS_datetime_initiation_str), fill_value=True, dtype=bool)
+    
+    filter_label = ''
                                    
-MCS_datetime_initiation_location_filtered_str = MCS_datetime_initiation_str[location_filtered_indices]
-MCS_center_lons_initiation_location_filtered = MCS_center_lons_initiation[location_filtered_indices]
-MCS_center_lats_initiation_flocation_iltered = MCS_center_lats_initiation[location_filtered_indices]
+MCS_datetime_initiation_str_filtered = MCS_datetime_initiation_str[mask]
+MCS_center_lons_initiation_filtered = MCS_center_lons_initiation[mask]
+MCS_center_lats_initiation_filtered = MCS_center_lats_initiation[mask]
 
-# number of MCSs within chosen region
-num_MCS_init_region = len(MCS_datetime_initiation_location_filtered_str)
-print('# of MCSs within chosen region: ', num_MCS_init_region)
+# number of MCSs that meet chosen conditions
+num_MCS = len(MCS_datetime_initiation_str_filtered)
+print('# of MCSs that meet chosen conditions: ', num_MCS)
 
-######### filter MCS tracks by MCS start type ######### 
+MCS_duration = np.array(MCS_tracks_ncfile.variables['length'])
 
-MCS_start_type_location_filtered = np.array(MCS_tracks_ncfile.variables['starttrackresult'])[location_filtered_indices]
+print('MCS_duration', MCS_duration)
+print('len(MCS_duration)', len(MCS_duration))
 
-print(MCS_start_type_location_filtered)
+MCS_duration_filtered = MCS_duration[mask]
 
-MCS_start_type_filtered_indices = np.where(MCS_start_type_location_filtered == 10)[0]
+MCS_majoraxislength_init = np.array(MCS_tracks_ncfile.variables['majoraxislength'])[:,0]
 
-MCS_datetime_init_filt_by_loc_and_start_type_str = MCS_datetime_initiation_location_filtered_str[MCS_start_type_filtered_indices]
-MCS_center_lons_init_filt_by_loc_and_start_type = MCS_center_lons_initiation_location_filtered[MCS_start_type_filtered_indices]
-MCS_center_lats_init_filt_by_loc_and_start_type = MCS_center_lats_initiation_flocation_iltered[MCS_start_type_filtered_indices]
+MCS_majoraxislength_init_2 = np.array(MCS_tracks_ncfile.variables['majoraxislength'])[:,1]
 
-num_MCS_init_region_and_new_MCS = len(MCS_datetime_init_filt_by_loc_and_start_type_str)
-print('# of MCSs within chosen region and new MCS: ', num_MCS_init_region_and_new_MCS)
+MCS_majoraxislength_growth = MCS_majoraxislength_init_2 - MCS_majoraxislength_init
+
+MCS_majoraxislength_growth_filtered = MCS_majoraxislength_growth[mask]
 
 ##### compare MCS times to SALLJ times ###
 #
@@ -138,15 +165,15 @@ MCS_tracks_ncfile.close()
 
 ######### Get area average environmental data centered on each MCS track chosen ######### 
 
-# go through list of times/centroids
-for MCS_datetime, MCS_center_lon, MCS_center_lat in zip(MCS_datetime_init_filt_by_loc_and_start_type_str, MCS_center_lons_init_filt_by_loc_and_start_type, MCS_center_lats_init_filt_by_loc_and_start_type):
+mean_bulk_shear_0_3km = np.full(len(MCS_datetime_initiation_str_filtered), np.nan)
+mean_bulk_shear_0_6km = np.full(len(MCS_datetime_initiation_str_filtered), np.nan)
+mean_bulk_shear_2_6km = np.full(len(MCS_datetime_initiation_str_filtered), np.nan)
+prop_area_SALLJ = np.full(len(MCS_datetime_initiation_str_filtered), np.nan)
+median_SALLJ_max_wind = np.full(len(MCS_datetime_initiation_str_filtered), np.nan)
+median_SALLJ_height = np.full(len(MCS_datetime_initiation_str_filtered), np.nan)
 
-    # get lats/lons of region based on centroid
-    lat_bottom_left_env = MCS_center_lat - 0.75 
-    lon_bottom_left_env = MCS_center_lon - 0.75
-                                   
-    lat_top_right_env = MCS_center_lat + 0.75 
-    lon_top_right_env = MCS_center_lon + 0.75
+# go through list of times/centroids for each MCS to get corresponding environmental conditions
+for count, (MCS_datetime, MCS_center_lon, MCS_center_lat) in enumerate(zip(MCS_datetime_initiation_str_filtered, MCS_center_lons_initiation_filtered, MCS_center_lats_initiation_filtered)):
 
     # get the file necessary
     path_wrf = '/home/disk/monsoon/relampago/raw/wrf/'                  
@@ -171,6 +198,90 @@ for MCS_datetime, MCS_center_lon, MCS_center_lat in zip(MCS_datetime_init_filt_b
 
     # get the netCDF
     wrf_ncfile = Dataset(wrf_file_path,'r')
+    
+    ####### get environmental profiles #######
+    
+    # get lats/lons of region based on centroid
+    lat_bottom_left_env = MCS_center_lat - 0.75 
+    lon_bottom_left_env = MCS_center_lon - 0.75
+                                   
+    lat_top_right_env = MCS_center_lat + 0.75 
+    lon_top_right_env = MCS_center_lon + 0.75
+    
+    #print(MCS_center_lat, MCS_center_lon)
+    #print(lat_bottom_left_env, lon_bottom_left_env)
+    #print(lat_top_right_env, lon_top_right_env)
+    
+    # get xy for regions
+    bottom_left_xy = ll_to_xy(wrf_ncfile, lat_bottom_left_env, lon_bottom_left_env)
+    top_right_xy = ll_to_xy(wrf_ncfile, lat_top_right_env, lon_top_right_env)  
+
+    # read in the variables 
+    hght_original = getvar(wrf_ncfile, 'height', msl=False, units='m')[:,int(bottom_left_xy[1]):int(top_right_xy[1]),int(bottom_left_xy[0]):int(top_right_xy[0])] # in m NOTE: this is AGL not MSL!!
+    u_original = getvar(wrf_ncfile, 'ua', units='kt')[:,int(bottom_left_xy[1]):int(top_right_xy[1]),int(bottom_left_xy[0]):int(top_right_xy[0])] # in kts
+    v_original = getvar(wrf_ncfile, 'va', units='kt')[:,int(bottom_left_xy[1]):int(top_right_xy[1]),int(bottom_left_xy[0]):int(top_right_xy[0])] # in kts
+    
+    #print(u_original)
+    #print(hght_original)
+    
+    u2km = interplevel(u_original, hght_original, 2000)
+    v2km = interplevel(v_original, hght_original, 2000)
+
+    u3km = interplevel(u_original, hght_original, 3000)
+    v3km = interplevel(v_original, hght_original, 3000)
+    
+    u6km = interplevel(u_original, hght_original, 6000)
+    v6km = interplevel(v_original, hght_original, 6000)
+    
+    u_sfc = u_original[3, :, :]
+    v_sfc = v_original[3, :, :]
+
+    # calculate mean values
+    mean_u2km = np.nanmean(u2km)
+    mean_v2km = np.nanmean(v2km)
+    
+    mean_u3km = np.nanmean(u3km)
+    mean_v3km = np.nanmean(v3km)
+    
+    mean_u6km = np.nanmean(u6km)
+    mean_v6km = np.nanmean(v6km)
+    
+    mean_u_sfc = np.nanmean(u_sfc)
+    mean_v_sfc = np.nanmean(v_sfc)
+    
+#    mean_u_sfc = u_mean_profile[3]
+#    mean_v_sfc = v_mean_profile[3]
+#    
+#    mean_u2km = interplevel(u_mean_profile, hght_mean_profile, 2000)
+#    mean_v2km = interplevel(v_mean_profile, hght_mean_profile, 2000)
+#
+#    mean_u3km = interplevel(u_mean_profile, hght_mean_profile, 3000)
+#    mean_v3km = interplevel(v_mean_profile, hght_mean_profile, 3000)
+#    
+#    mean_u6km = interplevel(u_mean_profile, hght_mean_profile, 6000)
+#    mean_v6km = interplevel(v_mean_profile, hght_mean_profile, 6000)
+    
+    # calcualte mean shear
+    mean_udiff_0_3 = mean_u3km - mean_u_sfc
+    mean_vdiff_0_3 = mean_v3km - mean_v_sfc
+    
+    mean_shear3km = np.sqrt(mean_udiff_0_3**2 + mean_vdiff_0_3**2)
+
+    mean_bulk_shear_0_3km[count] = mean_shear3km
+    
+    mean_udiff_0_6 = mean_u6km - mean_u_sfc
+    mean_vdiff_0_6 = mean_v6km - mean_v_sfc
+    
+    mean_shear6km = np.sqrt(mean_udiff_0_6**2 + mean_vdiff_0_6**2)
+
+    mean_bulk_shear_0_6km[count] = mean_shear6km
+    
+    mean_udiff_2_6 = mean_u6km - mean_u2km
+    mean_vdiff_2_6 = mean_v6km - mean_v2km
+    
+    mean_shear2_6km = np.sqrt(mean_udiff_2_6**2 + mean_vdiff_2_6**2)
+
+    mean_bulk_shear_2_6km[count] = mean_shear2_6km
     
     ########## find if SALLJ is present and if so calculate characteristics #########
     
@@ -373,37 +484,62 @@ for MCS_datetime, MCS_center_lon, MCS_center_lat in zip(MCS_datetime_init_filt_b
     
     proporation_SALLJ = num_points_SALLJ/num_total_points
     
-    print('proporation coverage: ', proporation_SALLJ)
+    #print('proporation coverage: ', proporation_SALLJ)
     
-    if proporation_SALLJ >= 0.3:
+    prop_area_SALLJ[count] = proporation_SALLJ
+    
+    if proporation_SALLJ >= 0.12:
         
-        print('found SALLJ')
+        #print('found SALLJ')
         
         ### get SALLJ characteristics for points where the SALLJ criteria is met
 
         # get max_wind for points that meet SALLJ criteria
         max_wind_SALLJs = max_wind.where(np.isnan(drct_at_max_wind_meeting_threshold) == False, np.nan)
         
-        median_SALLJ_max_wind = np.nanmedian(max_wind_SALLJs)
+        median_SALLJ_max_wind[count] = np.nanmedian(max_wind_SALLJs)
         
         # get level of max_wind for points that meet SALLJ criteria
         level_max_wind_SALLJs = level_max_wind.where(np.isnan(drct_at_max_wind_meeting_threshold) == False, np.nan)
         
-        median_SALLJ_level = np.nanmedian(level_max_wind_SALLJs)
+        median_SALLJ_height[count] = np.nanmedian(level_max_wind_SALLJs)
         
-        print('Median SALLJ wind: %s   Median SALLJ level: %s' %(median_SALLJ_max_wind, median_SALLJ_level))
+        #print('Median SALLJ wind: %s   Median SALLJ level: %s' %(median_SALLJ_max_wind, median_SALLJ_level))
+        
+#        if proporation_SALLJ < 0.3:
+#            
+#            SALLJ_status = 'low_coverage_SALLJ'
+#        elif proporation_SALLJ <= 0.3 and proporation_SALLJ < 0.6:
+#            
+#            SALLJ_status = 'med_coverage_SALLJ'
+#            
+#        elif proporation_SALLJ >= 0.6:
+#            
+#            SALLJ_status = 'high_coverage_SALLJ'
         
     else:
-        print('no SALLJ found')
+        #print('no SALLJ found')
+        
+#        SALLJ_status = 'no_SALLJ'
+        pass
         
         
         
-        # calculate shear characteristics
+    # calculate shear characteristics
     
     # calculate Richardson number
     
     # save MCS characteristics (time, centroid, growth rate, cloud sheild area) and environmental characteristics (SALLJ characterisitcs, shear) to netCDF or dateframe file
     
     wrf_ncfile.close()
+    
+pickle.dump(MCS_duration_filtered, open("MCS_duration2%s.dat" %(filter_label), "wb"))
+pickle.dump(MCS_majoraxislength_growth_filtered, open("MCS_majoraxislength_growth%s.dat" %(filter_label), "wb"))
+pickle.dump(mean_bulk_shear_0_3km, open("MCS_mean_bulk_shear_0_3km%s.dat" %(filter_label), "wb"))
+pickle.dump(mean_bulk_shear_0_6km, open("MCS_mean_bulk_shear_0_6km%s.dat" %(filter_label), "wb"))
+pickle.dump(mean_bulk_shear_2_6km, open("MCS_mean_bulk_shear_2_6km%s.dat" %(filter_label), "wb"))
+pickle.dump(prop_area_SALLJ, open("MCS_prop_area_SALLJ%s.dat" %(filter_label), "wb"))
+pickle.dump(median_SALLJ_max_wind, open("MCS_median_SALLJ_max_wind%s.dat" %(filter_label), "wb"))
+pickle.dump(median_SALLJ_height, open("MCS_median_SALLJ_height%s.dat" %(filter_label), "wb"))
 
     
