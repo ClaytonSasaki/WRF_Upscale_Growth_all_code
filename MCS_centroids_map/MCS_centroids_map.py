@@ -89,9 +89,9 @@ ax[1].imshow(arr, interpolation='nearest', cmap=new_cmap2)
 cdict1 = {'charteruse', 'lime', 'mediumsegreen', 'forestgreen', 'darkgreen'}
 new_green_cmap = mc.LinearSegmentedColormap('newGreens', cdict1)
 
-# read in MCS tracks
-MCS_tracks_file_path = '/home/disk/monsoon/relampago/analysis//mcs_tracks/wrf/stats/robust_mcs_tracks_20181015_20190430.nc'
-MCS_tracks_ncfile = Dataset(MCS_tracks_file_path,'r')
+#################### VARIABLES TO CHANGE ##########################
+
+MCS_type = 'all_MCS' # 'all_MCS' or 'robustMCS'
 
 MCS_init_location_filter = True
 
@@ -100,11 +100,26 @@ MCS_start_type_filter = True
 offset_MCS_and_conditions = False
 hours_offset = -1
 
-MCS_init_area = 'large_area1'
+MCS_init_area = 'largeArea2'
 SALLJ_search_area = '2deg4degOffset1degNFromCentroid'
-plot_SALLJ_search_area = False
+plot_SALLJ_search_area = True
+
+env_search_area = '0.75fromMCScentroid' # '0.75fromMCScentroid'
+plot_env_search_area = True
 
 ######### get MCS initation times and centroid locations #########
+if MCS_type == 'all_MCS':
+    MCS_tracked_file = 'mcs_tracks_pf_20181015_20190430.nc'
+    MCS_file_label = 'MCS'
+elif MCS_type == 'robustMCS':
+    MCS_tracked_file = 'robust_mcs_tracks_20181015_20190430.nc'
+    MCS_file_label = 'robustMCS'
+else:
+    print('MUST choose valid MCS_type')
+
+# read in MCS tracks
+MCS_tracks_file_path = '/home/disk/monsoon/relampago/analysis//mcs_tracks/wrf/stats/%s' %(MCS_tracked_file)
+MCS_tracks_ncfile = Dataset(MCS_tracks_file_path,'r')
 
 # gets MCS times in byte format
 MCS_datetime_bytes = MCS_tracks_ncfile.variables['datetimestring']
@@ -136,17 +151,23 @@ print('lats of MCS init \n', MCS_center_lats_initiation)
 ######### create filter MCS tracks by centroid location ######### 
 
 # save MCS initation times and centroid locations of those within defined box
-if MCS_init_area == 'large_area1':
+if MCS_init_area == 'largeArea1':
     lon_min = -66.0
     lon_max = -57.0
     lat_min = -36.0
     lat_max = -28.0
 
-elif MCS_init_area == 'large_area2':
+elif MCS_init_area == 'largeArea2':
     lon_min = -66.0
     lon_max = -57.0
     lat_min = -36.0
     lat_max = -29.5
+    
+elif MCS_init_area == 'ZhangArea':
+    lon_min = -70.0
+    lon_max = -59.0
+    lat_min = -36.0
+    lat_max = -26.5
 
 else:
     print('Please add the matching lats and lons to search!')
@@ -320,9 +341,10 @@ for count, (MCS_datetime, MCS_center_lon, MCS_center_lat) in enumerate(zip(MCS_d
     # plot MCS centroid
     axs.scatter(MCS_center_lon, MCS_center_lat, transform=crs.PlateCarree(), color='black', marker='*', zorder=7, s=1600)
     
+    # plot SALLJ search area 
     if plot_SALLJ_search_area == True:
         
-        SALLJ_search_text = '_wSALLJsearch_%s' %(SALLJ_search_area)
+        SALLJ_search_text = '_wSALLJarea_%s' %(SALLJ_search_area)
     
         if SALLJ_search_area == '1deg3degBottomCentroid':
 
@@ -338,7 +360,7 @@ for count, (MCS_datetime, MCS_center_lon, MCS_center_lat) in enumerate(zip(MCS_d
             lat_top_right_SALLJ = MCS_center_lat + 3.00 
             lon_top_right_SALLJ = MCS_center_lon + 2.00
         else:
-            pass # will throw error
+            print('Please enter valid SALLJ search area') # will throw error
         
         
         # plot MCS initation box
@@ -350,12 +372,44 @@ for count, (MCS_datetime, MCS_center_lon, MCS_center_lat) in enumerate(zip(MCS_d
     else:
         
         SALLJ_search_text = ''
+        
+        
+        
+    # plot environmental search area    
+    if plot_env_search_area == True:
+        
+        env_search_text = '_wEnvironmentArea_%s' %(env_search_area)
+    
+        if env_search_area == '0.75fromMCScentroid':
+
+            # get lats/lons of region based on centroid
+            lat_bottom_left_env = MCS_center_lat - 0.75 
+            lon_bottom_left_env = MCS_center_lon - 0.75
+
+            lat_top_right_env = MCS_center_lat + 0.75 
+            lon_top_right_env = MCS_center_lon + 0.75
+
+        else:
+            print('Please enter valid env search area') # will throw error
+        
+        
+        # plot MCS initation box
+        axs.plot([lon_bottom_left_env, lon_top_right_env], [lat_top_right_env, lat_top_right_env], 'c--', lw=6, transform=crs.PlateCarree(), zorder=6)
+        axs.plot([lon_bottom_left_env, lon_bottom_left_env], [lat_bottom_left_env, lat_top_right_env], 'c--', lw=6, transform=crs.PlateCarree(), zorder=6)
+        axs.plot([lon_bottom_left_env, lon_top_right_env], [lat_bottom_left_env, lat_bottom_left_env], 'c--', lw=6, transform=crs.PlateCarree(), zorder=6)
+        axs.plot([lon_top_right_env, lon_top_right_env], [lat_bottom_left_env, lat_top_right_env], 'c--', lw=6, transform=crs.PlateCarree(), zorder=6)
+            
+    else:
+        
+        env_search_text = ''
 
     #print 'saving'
 
     #plt.suptitle("Max Reflectivity and sfc-%d wind shear: %sZ" % (level, file_name[11:24]))
+    
+outpath = '/home/disk/meso-home/crs326/Documents/Research/WRF_Upscale_Growth_Paper/MCS_centroids_map'
 
-plt.savefig('/home/disk/meso-home/crs326/Documents/Research/WRF_Upscale_Growth_Paper/MCS_centroids_map/robust_MCS_initCentroids_%s%s.png' %(MCS_init_area, SALLJ_search_text), dpi=600)
+plt.savefig(outpath + '/2%s_initCentroids_%s%s%s.png' %(MCS_file_label, MCS_init_area, SALLJ_search_text, env_search_text), dpi=600)
 
 print('saved')
 
