@@ -100,7 +100,7 @@ MCS_start_type_filter = True
 offset_MCS_and_conditions = False
 hours_offset = -1
 
-MCS_init_area = 'largeArea2'
+MCS_init_area = 'largeArea1'
 SALLJ_search_area = '2deg4degOffset1degNFromCentroid'
 plot_SALLJ_search_area = True
 
@@ -409,7 +409,7 @@ for count, (MCS_datetime, MCS_center_lon, MCS_center_lat) in enumerate(zip(MCS_d
     
 outpath = '/home/disk/meso-home/crs326/Documents/Research/WRF_Upscale_Growth_Paper/MCS_centroids_map'
 
-plt.savefig(outpath + '/2%s_initCentroids_%s%s%s.png' %(MCS_file_label, MCS_init_area, SALLJ_search_text, env_search_text), dpi=600)
+plt.savefig(outpath + '/%s_initCentroids_%s%s%s.png' %(MCS_file_label, MCS_init_area, SALLJ_search_text, env_search_text), dpi=600)
 
 print('saved')
 
