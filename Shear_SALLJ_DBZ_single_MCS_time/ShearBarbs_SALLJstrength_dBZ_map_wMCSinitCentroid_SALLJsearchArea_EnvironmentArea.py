@@ -104,10 +104,10 @@ hours_offset = -1
 MCS_init_area = 'large_area1' # 'large_area1', 'large_area2', 'Zhang_area', 'SDC_area1'
 
 # NOTE: SALLJ_search_text variables defined below not currently used in file name so will produce will in new folder but with the same name if EITHER SALLJ_search OPTION BELOW IS CHANGED!!
-SALLJ_search_area = '1deg3degBottomCentroid' # '2deg4degOffset1degNFromCentroid', '1deg3degBottomCentroid', '60-65W28-30SFixed'
+SALLJ_search_area = '2deg4degOffset1degNFromCentroid' # '2deg4degOffset1degNFromCentroid', '1deg3degBottomCentroid', '60-65W28-30SFixed'
 plot_SALLJ_search_area = True
 
-env_search_area = '0.75fromMCScentroid' # '0.75fromMCScentroid'
+env_search_area = '2.00fromMCScentroid' # '0.75fromMCScentroid', '2.00fromMCScentroid'
 plot_env_search_area = True
 
 ######### get MCS initation times and centroid locations #########
@@ -174,10 +174,10 @@ elif MCS_init_area == 'Zhang_area':
     lat_max = -26.5
     
 elif MCS_init_area == 'SDC_area1':
-lon_min = -66.25
-lon_max = -61.1
-lat_min = -34.0
-lat_max = -29.5
+    lon_min = -66.25
+    lon_max = -61.1
+    lat_min = -34.0
+    lat_max = -29.5
 
 else:
     print('Please add the matching lats and lons to search!')
@@ -574,6 +574,15 @@ for count, (MCS_datetime, MCS_center_lon, MCS_center_lat) in enumerate(zip(MCS_d
 
             lat_top_right_env = MCS_center_lat + 0.75 
             lon_top_right_env = MCS_center_lon + 0.75
+            
+        if env_search_area == '2.00fromMCScentroid':
+
+            # get lats/lons of region based on centroid
+            lat_bottom_left_env = MCS_center_lat - 2.00 
+            lon_bottom_left_env = MCS_center_lon - 2.00
+
+            lat_top_right_env = MCS_center_lat + 2.00 
+            lon_top_right_env = MCS_center_lon + 2.00
 
         else:
             print('Please enter valid env search area') # will throw error
