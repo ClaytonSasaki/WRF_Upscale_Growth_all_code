@@ -65,9 +65,15 @@ median_SALLJ_max_wind = pickle.load( open(general_path + specific_inpath + "%s_m
 median_SALLJ_height = pickle.load(open(general_path + specific_inpath + "%s_median_SALLJ_height_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
 MCS_q_850 = pickle.load( open(general_path + specific_inpath + "%s_q_850_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
 
-condition_MCS_ccs_area_growth_filtered_2hr = MCS_ccs_area_growth_filtered_2hr >= 10000
+############ Change variable for seperation ############
 
-mask1 = condition_MCS_ccs_area_growth_filtered_2hr
+var_seperation = MCS_ccs_area_growth_filtered_2hr
+var_seperation_name = 'ccs_area_growth_2hr'
+seperation_threshold = 11200
+
+########################################################
+
+mask1 = var_seperation >= seperation_threshold
 
 MCS_prop_area_SALLJ_mask1 = MCS_prop_area_SALLJ[mask1]
 MCS_duration_filtered_mask1 = MCS_duration_filtered[mask1]
@@ -83,9 +89,7 @@ MCS_q_850_mask1 = MCS_q_850[mask1]
 
 print('# rapid growth MCS', len(MCS_ccs_area_growth_filtered_2hr_mask1))
 
-condition_MCS_ccs_area_growth_filtered_2hr = MCS_ccs_area_growth_filtered_2hr < 10000
-
-mask2 = condition_MCS_ccs_area_growth_filtered_2hr
+mask2 = var_seperation < seperation_threshold
 
 MCS_prop_area_SALLJ_mask2 = MCS_prop_area_SALLJ[mask2]
 MCS_duration_filtered_mask2 = MCS_duration_filtered[mask2]
@@ -101,11 +105,15 @@ MCS_q_850_mask2 = MCS_q_850[mask2]
 
 print('# slow growth MCS', len(MCS_ccs_area_growth_filtered_2hr_mask2))
 
-data_all_growth = MCS_q_850
-data_rapid_growth = MCS_q_850_mask1
-data_slow_growth = MCS_q_850_mask2
-variable_name = 'MCS_q_850' # MCS_prop_area_SALLJ, MCS_0_3km_shear, MCS_q_850 
-x_label = '850-hPa q' # proportion of area w/SALLJ, bulk 0-3 km shear, 850-hPa q
+############ Change variable plotting ############ 
+
+data_all_growth = bulk_shear_0_3km
+data_rapid_growth = bulk_shear_0_3km_mask1
+data_slow_growth = bulk_shear_0_3km_mask2
+variable_name = 'MCS_0_3km_shear' # MCS_prop_area_SALLJ, MCS_0_3km_shear, MCS_q_850 
+x_label = 'bulk 0-3 km shear' # proportion of area w/SALLJ, bulk 0-3 km shear, 850-hPa q
+
+################################################## 
 
 fig, ax = plt.subplots()
 
@@ -328,7 +336,7 @@ print('saving')
 
 specific_outpath = '%sarea_%s%s%s/plots/' %(MCS_file_label, MCS_init_area, SALLJ_search_text, env_search_text)
 
-plt.savefig(general_path + specific_outpath + '%s_hist%s%s%s_growth%s.png' %(variable_name, dist_text_all_growth, dist_text_rapid_growth, dist_text_slow_growth, filter_label), dpi=200)
+plt.savefig(general_path + specific_outpath + '%s_hist_by_%s%d%s%s%s%s.png' %(variable_name, var_seperation_name, seperation_threshold, dist_text_all_growth, dist_text_rapid_growth, dist_text_slow_growth, filter_label), dpi=200)
 
 print('saved')
     
