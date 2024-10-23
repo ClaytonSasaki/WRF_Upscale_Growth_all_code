@@ -106,9 +106,9 @@ hours_offset = -3
 
 MCS_init_area = 'large_area1' # 'large_area1', 'large_area2', 'Zhang_area', 'SDC_area1'
 
-SALLJ_search_area = '2deg4degOffset1degNFromCentroid' # '2deg4degOffset1degNFromCentroid', '1deg3degBottomCentroid', '60-65W28-30SFixed'
-
-env_search_area = '2.00fromMCScentroid' # '0.75fromMCScentroid', '2.00fromMCScentroid'
+#SALLJ_search_area = '2deg4degOffset1degNFromCentroid' # '2deg4degOffset1degNFromCentroid', '1deg3degBottomCentroid', '60-65W28-30SFixed'
+#
+#env_search_area = '2.00fromMCScentroid' # '0.75fromMCScentroid', '2.00fromMCScentroid'
 
 ######### get MCS initation times and centroid locations #########
 
@@ -426,7 +426,7 @@ for count, (MCS_datetime, MCS_center_lon, MCS_center_lat) in enumerate(zip(MCS_d
     
 general_outpath = '/home/disk/meso-home/crs326/Documents/Research/WRF_Upscale_Growth_Paper/MCS_characteristics_vs_environment_MCS_centroid/'
 
-specific_outpath = '%sarea_%s%s/data/' %(MCS_file_label, MCS_init_area, '__EnvArea_2.00fromMCScentroid')
+specific_outpath = '%sarea_%s/data/' %(MCS_file_label, MCS_init_area)
 
 # output arrays as pickles (.dat files)
 pickle.dump(MCS_duration_filtered, open(general_outpath + specific_outpath + "%s%s_duration2%s_%s.dat" %(MCS_file_label, offset_label, filter_label, MCS_init_area), "wb"))
