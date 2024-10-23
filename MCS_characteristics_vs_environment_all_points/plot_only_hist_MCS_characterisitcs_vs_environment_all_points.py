@@ -60,10 +60,15 @@ MCS_ccs_area_growth_filtered = pickle.load(open(general_path + specific_inpath +
 MCS_ccs_area_growth_filtered_2hr = pickle.load(open(general_path + specific_inpath + "%s_ccs_area_growth_2hr_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
 bulk_shear_0_3km = pickle.load(open(general_path + specific_inpath + "%s_bulk_shear_0_3km_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
 bulk_shear_0_6km = pickle.load(open(general_path + specific_inpath + "%s_bulk_shear_0_6km_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
-bulk_shear_2_6km = pickle.load( open(general_path + specific_inpath + "%s_bulk_shear_2_6km_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
-median_SALLJ_max_wind = pickle.load( open(general_path + specific_inpath + "%s_median_SALLJ_max_wind_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
+bulk_shear_2_6km = pickle.load(open(general_path + specific_inpath + "%s_bulk_shear_2_6km_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
+median_SALLJ_max_wind = pickle.load(open(general_path + specific_inpath + "%s_median_SALLJ_max_wind_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
 median_SALLJ_height = pickle.load(open(general_path + specific_inpath + "%s_median_SALLJ_height_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
-MCS_q_850 = pickle.load( open(general_path + specific_inpath + "%s_q_850_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
+MCS_q_850 = pickle.load(open(general_path + specific_inpath + "%s_q_850_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
+MCS_MUCAPE = pickle.load(open(general_path + specific_inpath + "%s_MUCAPE_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
+MCS_wv_flux_850 = pickle.load(open(general_path + specific_inpath + "%s_wv_flux_850_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
+MCS_wv_flux_850_v = pickle.load(open(general_path + specific_inpath + "%s_wv_flux_850_v_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb")) # used m/s for wind
+MCS_q_flux_850 = pickle.load(open(general_path + specific_inpath + "%s_q_flux_850_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb")) # used m/s for wind
+MCS_q_flux_850_v = pickle.load(open(general_path + specific_inpath + "%s_q_flux_850_v_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb")) # used m/s for wind
 
 ############ Change variable for seperation ############
 
@@ -86,6 +91,11 @@ bulk_shear_2_6km_mask1 = bulk_shear_2_6km[mask1]
 median_SALLJ_max_wind_mask1 = median_SALLJ_max_wind[mask1]
 median_SALLJ_height_mask1 = median_SALLJ_height[mask1]
 MCS_q_850_mask1 = MCS_q_850[mask1]
+MCS_MUCAPE_mask1 = MCS_MUCAPE[mask1]
+MCS_wv_flux_850_mask1 = MCS_wv_flux_850[mask1]
+MCS_wv_flux_850_v_mask1 = MCS_wv_flux_850_v[mask1]
+MCS_q_flux_850_mask1 = MCS_q_flux_850[mask1]
+MCS_q_flux_850_v_mask1 = MCS_q_flux_850_v[mask1]
 
 print('# rapid growth MCS', len(MCS_ccs_area_growth_filtered_2hr_mask1))
 
@@ -102,16 +112,21 @@ bulk_shear_2_6km_mask2 = bulk_shear_2_6km[mask2]
 median_SALLJ_max_wind_mask2 = median_SALLJ_max_wind[mask2]
 median_SALLJ_height_mask2 = median_SALLJ_height[mask2]
 MCS_q_850_mask2 = MCS_q_850[mask2]
+MCS_MUCAPE_mask2 = MCS_MUCAPE[mask2]
+MCS_wv_flux_850_mask2 = MCS_wv_flux_850[mask2]
+MCS_wv_flux_850_v_mask2 = MCS_wv_flux_850_v[mask2]
+MCS_q_flux_850_mask2 = MCS_q_flux_850[mask2]
+MCS_q_flux_850_v_mask2 = MCS_q_flux_850_v[mask2]
 
 print('# slow growth MCS', len(MCS_ccs_area_growth_filtered_2hr_mask2))
 
 ############ Change variable plotting ############ 
 
-data_all_growth = bulk_shear_0_3km
-data_rapid_growth = bulk_shear_0_3km_mask1
-data_slow_growth = bulk_shear_0_3km_mask2
-variable_name = 'MCS_0_3km_shear' # MCS_prop_area_SALLJ, MCS_0_3km_shear, MCS_q_850 
-x_label = 'bulk 0-3 km shear' # proportion of area w/SALLJ, bulk 0-3 km shear, 850-hPa q
+data_all_growth = MCS_wv_flux_850_v
+data_rapid_growth = MCS_wv_flux_850_v_mask1
+data_slow_growth = MCS_wv_flux_850_v_mask2
+variable_name = 'MCS_wv_flux_850_v' # MCS_prop_area_SALLJ, MCS_0_3km_shear, MCS_q_850, MCS_MUCAPE 
+x_label = '850hPa v wv flux (m/s)' # proportion of area w/SALLJ, bulk 0-3 km shear, 850-hPa q, MUCAPE (J/kg)
 
 ################################################## 
 
@@ -153,182 +168,6 @@ plt.ylabel('Probability Density')
 
 # Show legend
 plt.legend()
-
-
-##------ MCS Length Growth vs 850hPa q -------
-#
-##x_var = MCS_q_850
-##y_var = MCS_majoraxislength_growth_filtered
-##
-##filename_x = 'MCS_q_850'
-##filename_y = 'MCS_majoraxislength_growth_filtered'
-##
-##xlabel = 'mean q at 850hPa'
-##ylabel = 'MCS_majoraxislength_growth (km/h)'
-#
-##------ MCS Area Growth vs 850hPa q -------
-#
-##x_var = MCS_q_850
-##y_var = MCS_ccs_area_growth_filtered
-##
-##filename_x = 'MCS_q_850'
-##filename_y = 'MCS_ccs_area_growth_filtered'
-##
-##xlabel = 'mean q at 850hPa'
-##ylabel = 'MCS_ccs_area_growth_filtered (km2/h)'
-#
-##------ MCS Area Growth 2hr vs 850hPa q -------
-#
-##x_var = MCS_q_850
-##y_var = MCS_ccs_area_growth_filtered_2hr
-##
-##filename_x = 'MCS_q_850'
-##filename_y = 'MCS_ccs_area_growth_filtered_2hr'
-##
-##xlabel = 'mean q at 850hPa'
-##ylabel = 'MCS_ccs_area_growth_filtered_2hr (km2/2h)'
-#
-##------ MCS Length Growth vs SALLJ Coverage -------
-#
-##x_var = MCS_prop_area_SALLJ
-##y_var = MCS_majoraxislength_growth_filtered
-##
-##filename_x = 'MCS_prop_area_SALLJ'
-##filename_y = 'MCS_majoraxislength_growth_filtered'
-##
-##xlabel = 'Coverage proportion w/ SALLJ'
-##ylabel = 'MCS_majoraxislength_growth (km/h)'
-#
-##------ MCS Area Growth 2hr vs SALLJ Coverage -------
-#
-##x_var = MCS_prop_area_SALLJ
-##y_var = MCS_ccs_area_growth_filtered_2hr
-##
-##filename_x = 'MCS_prop_area_SALLJ'
-##filename_y = 'MCS_ccs_area_growth_filtered_2hr'
-##
-##xlabel = 'Coverage proportion w/ SALLJ'
-##ylabel = 'MCS_ccs_area_growth_filtered_2hr (km2/2h)'
-#
-##------SALLJ Coverage vs Shear Strength -------
-#
-##x_var = mean_bulk_shear_2_6km
-##y_var = MCS_prop_area_SALLJ
-##
-##filename_x = 'mean_bulk_shear_2_6km'
-##filename_y = 'MCS_prop_area_SALLJ'
-##
-##xlabel = 'Mean 2-6 km shear (kts)'
-##ylabel = 'Coverage proportion w/ SALLJ'
-#
-##------ MCS Length Growth vs Shear Strength -------
-#
-##x_var = mean_bulk_shear_2_6km
-##y_var = MCS_majoraxislength_growth_filtered
-##
-##filename_x = 'mean_bulk_shear_2_6km'
-##filename_y = 'MCS_majoraxislength_growth_filtered'
-##
-##xlabel = 'Mean 2-6 km shear (kts)'
-##ylabel = 'MCS_majoraxislength_growth (km/h)'
-#
-##------ MCS Duration vs Shear Strength -------
-#
-##x_var = mean_bulk_shear_0_3km
-##y_var = MCS_duration_filtered
-##
-##filename_x = 'mean_bulk_shear_0_3km'
-##filename_y = 'MCS_duration_filtered'
-##
-##xlabel = 'Mean 0-3 km shear (kts)'
-##ylabel = 'MCS duration (h)'
-#
-##------ MCS Area Growth 2hr vs Shear Strength -------
-#
-##x_var = mean_bulk_shear_2_6km
-##y_var = MCS_ccs_area_growth_filtered_2hr
-##
-##filename_x = 'mean_bulk_shear_2_6km'
-##filename_y = 'MCS_ccs_area_growth_filtered_2hr'
-##
-##xlabel = 'Mean 2-6 km shear (kts)'
-##ylabel = 'MCS_ccs_area_growth_filtered_2hr (km2/2h)'
-#
-##------ Shear Strength vs SALLJ Stength (for only SALLJ times) ------- # NOTE: must turn off second scatter by median_SALLJ_max_wind below
-#
-##indices_SALLJ = np.where(~np.isnan(median_SALLJ_max_wind))
-##
-##mean_bulk_shear_2_6km_onlySALLJ = mean_bulk_shear_2_6km[indices_SALLJ]
-##median_SALLJ_max_wind_onlySALLJ = median_SALLJ_max_wind[indices_SALLJ]
-##MCS_prop_area_SALLJ_onlySALLJ = MCS_prop_area_SALLJ[indices_SALLJ]
-##
-##x_var = median_SALLJ_max_wind_onlySALLJ
-##y_var = mean_bulk_shear_2_6km_onlySALLJ
-##
-##filename_x = 'median_SALLJ_max_wind_onlySALLJ'
-##filename_y = 'mean_bulk_shear_2_6km_onlySALLJ'
-##
-##xlabel = 'median_SALLJ_max_wind (kts)'
-##ylabel = 'Mean 2-6 km shear (kts)'
-##
-##ax.set_aspect(0.5)
-#
-############################### Color by SALLJ coverage ###############################
-#
-#plotted_fig = ax.scatter(x_var,y_var, c=MCS_prop_area_SALLJ, cmap='Reds', zorder=2) # MCS_prop_area_SALLJ_onlySALLJ
-#
-#cbar = fig.colorbar(plotted_fig)
-#cbar.ax.set_ylabel('Proportion SALLJ')
-#
-#
-############################### Outline color by SALLJ strength ###############################
-##cc = []
-##
-##for SALLJ_max in median_SALLJ_max_wind:
-##    if SALLJ_max >= 20 and SALLJ_max < 30:
-##        cc.append('green')
-##    elif SALLJ_max >= 30 and SALLJ_max < 40:
-##        cc.append('orange')
-##    elif SALLJ_max >= 40:
-##        cc.append('red')
-##    else:
-##        cc.append('black')
-#
-#ax.scatter(x_var, y_var, marker='o', s=90, c=median_SALLJ_max_wind, cmap='Blues', zorder=1)
-#
-########################  polynomial fit ###################### 
-### Fit a polynomial of degree 3
-##degree = 1
-##coeffs = np.polyfit(x_var, y_var, degree)
-##
-### Create a polynomial function from the coefficients
-##poly_fit = np.poly1d(coeffs)
-##
-### Generate values for the fitted curve
-##x_fit = np.linspace(min(x_var), max(x_var), 100)
-##y_fit = poly_fit(x_fit)
-#
-######################## linear regression ###################### 
-#
-## Perform linear regression
-#slope, intercept, r_value, p_value, std_err = stats.linregress(x_var, y_var)
-#
-## R-squared value
-#r_squared = r_value**2
-#
-## Generate the regression line
-#x_regress = np.linspace(min(x_var), max(x_var), 100)
-#y_regress = slope * x_regress + intercept
-#
-## Plot fitted line
-#plt.plot(x_regress, y_regress, color='red', linewidth=2)
-#
-#print('r_squared', r_squared)
-#
-#plt.text(0.1, 0.9, f'$R^2 = {r_squared:.4f}$')
-#
-#ax.set_ylabel(ylabel)
-#ax.set_xlabel(xlabel)
 
 plt.tight_layout()
 

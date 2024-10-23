@@ -282,6 +282,10 @@ bulk_shear_0_3km = []
 bulk_shear_0_6km = []
 bulk_shear_2_6km = []
 q_850 = []
+MUCAPE = []
+wv_flux_850_v = []
+q_flux_850 = []
+q_flux_850_v = []
 prop_area_SALLJ_all_points = []
 median_SALLJ_max_wind_all_points = []
 median_SALLJ_height_all_points = []
@@ -425,6 +429,30 @@ for count, (MCS_datetime, MCS_center_lon, MCS_center_lat) in enumerate(zip(MCS_d
     q_850.append(np.array(q_subset_level))
     
     print('q_subset_level.shape', q_subset_level.shape)
+    
+    MCAPE_original = getvar(wrf_ncfile, 'cape_2d')[0][int(bottom_left_xy[1]):int(top_right_xy[1]),int(bottom_left_xy[0]):int(top_right_xy[0])]
+    
+    MUCAPE.append(np.array(MCAPE_original))
+    
+    
+    v_850 = interplevel(v_original, pres, 850)
+    v_850_ms = v_850 * 0.5144 # convert from kts to m/s
+    
+    u_850 = interplevel(u_original, pres, 850)
+    u_850_ms = u_850 * 0.5144 # convert from kts to m/s
+    
+    
+    water_vapor_mass_flux_850_v = w_subset_level*v_850_ms # (g/kg)(m/s)
+    wv_flux_850_v.append(np.array(water_vapor_mass_flux_850_v))
+    
+    q_subset_level_kg_kg = q_subset_level/1000 # convert g/kg back to kg/kg
+    
+    qu_flux_850 = q_subset_level_kg_kg*u_850_ms
+    qv_flux_850 = q_subset_level_kg_kg*v_850_ms
+    q_total_flux_850 = np.sqrt((qu_flux_850**2)+(qv_flux_850**2))
+    
+    q_flux_850.append(np.array(q_total_flux_850))
+    q_flux_850_v.append(np.array(qv_flux_850))
     
     # create arrays of the same shape for MCS characteristics
     
@@ -769,6 +797,33 @@ for count, (MCS_datetime, MCS_center_lon, MCS_center_lat) in enumerate(zip(MCS_d
     # save MCS characteristics (time, centroid, growth rate, cloud sheild area) and environmental characteristics (SALLJ characterisitcs, shear) to netCDF or dateframe file
     
     wrf_ncfile.close()
+    
+print('SALLJ_count', SALLJ_count)
+print('low_cov_SALLJ_count', low_cov_SALLJ_count)
+print('med_cov_SALLJ_count', med_cov_SALLJ_count)
+print('high_cov_SALLJ_count', high_cov_SALLJ_count)
+    
+general_outpath = '/home/disk/meso-home/crs326/Documents/Research/WRF_Upscale_Growth_Paper/MCS_characteristics_vs_environment_all_points/'
+
+specific_outpath = '%sarea_%s%s%s/data/' %(MCS_file_label, MCS_init_area, SALLJ_search_text, env_search_text)
+
+## output arrays as pickles (.dat files) - grouping by event perserved
+#pickle.dump(MCS_duration_all_points, open(general_outpath + specific_outpath + "%s_duration2_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(MCS_majoraxislength_growth_all_points, open(general_outpath + specific_outpath + "%s_majoraxislength_growth_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(MCS_ccs_area_growth_all_points, open(general_outpath + specific_outpath + "%s_ccs_area_growth_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(MCS_ccs_area_growth_2hr_all_points, open(general_outpath + specific_outpath + "%s_ccs_area_growth_2hr_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(bulk_shear_0_3km, open(general_outpath + specific_outpath + "%s_bulk_shear_0_3km_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(bulk_shear_0_6km, open(general_outpath + specific_outpath + "%s_bulk_shear_0_6km_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(bulk_shear_2_6km, open(general_outpath + specific_outpath + "%s_bulk_shear_2_6km_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(q_850, open(general_outpath + specific_outpath + "%s_q_850_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(MUCAPE, open(general_outpath + specific_outpath + "%s_MUCAPE_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+pickle.dump(wv_flux_850_v, open(general_outpath + specific_outpath + "%s_wv_flux_850_v_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+pickle.dump(q_flux_850, open(general_outpath + specific_outpath + "%s_q_flux_850_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+pickle.dump(q_flux_850_v, open(general_outpath + specific_outpath + "%s_q_flux_850_v_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(prop_area_SALLJ_all_points, open(general_outpath + specific_outpath + "%s_prop_area_SALLJ_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(median_SALLJ_max_wind_all_points, open(general_outpath + specific_outpath + "%s_median_SALLJ_max_wind_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(median_SALLJ_height_all_points, open(general_outpath + specific_outpath + "%s_median_SALLJ_height_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+## Note: this could be improved by using a dict object
 
 # Flatten all arrays and concatenate them into one array
 MCS_duration_all_points = np.concatenate([arr.flatten() for arr in MCS_duration_all_points])
@@ -779,6 +834,10 @@ bulk_shear_0_3km = np.concatenate([arr.flatten() for arr in bulk_shear_0_3km])
 bulk_shear_0_6km = np.concatenate([arr.flatten() for arr in bulk_shear_0_6km])
 bulk_shear_2_6km = np.concatenate([arr.flatten() for arr in bulk_shear_2_6km])
 q_850 = np.concatenate([arr.flatten() for arr in q_850])
+MUCAPE = np.concatenate([arr.flatten() for arr in MUCAPE])
+wv_flux_850_v = np.concatenate([arr.flatten() for arr in wv_flux_850_v])
+q_flux_850 = np.concatenate([arr.flatten() for arr in q_flux_850])
+q_flux_850_v = np.concatenate([arr.flatten() for arr in q_flux_850_v])
 prop_area_SALLJ_all_points = np.concatenate([arr.flatten() for arr in prop_area_SALLJ_all_points])
 median_SALLJ_max_wind_all_points = np.concatenate([arr.flatten() for arr in median_SALLJ_max_wind_all_points])
 median_SALLJ_height_all_points = np.concatenate([arr.flatten() for arr in median_SALLJ_height_all_points])
@@ -811,28 +870,22 @@ print('len(prop_area_SALLJ_all_points)', len(prop_area_SALLJ_all_points))
 #prop_area_SALLJ_all_points = np.hstack(prop_area_SALLJ_all_points)
 #median_SALLJ_max_wind_all_points = np.hstack(median_SALLJ_max_wind_all_points)
 #median_SALLJ_height_all_points = np.hstack(median_SALLJ_height_all_points)
-    
-    
-print('SALLJ_count', SALLJ_count)
-print('low_cov_SALLJ_count', low_cov_SALLJ_count)
-print('med_cov_SALLJ_count', med_cov_SALLJ_count)
-print('high_cov_SALLJ_count', high_cov_SALLJ_count)
-    
-general_outpath = '/home/disk/meso-home/crs326/Documents/Research/WRF_Upscale_Growth_Paper/MCS_characteristics_vs_environment_all_points/'
 
-specific_outpath = '%sarea_%s%s%s/data/' %(MCS_file_label, MCS_init_area, SALLJ_search_text, env_search_text)
-
-# output arrays as pickles (.dat files)
-pickle.dump(MCS_duration_all_points, open(general_outpath + specific_outpath + "%s_duration2_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
-pickle.dump(MCS_majoraxislength_growth_all_points, open(general_outpath + specific_outpath + "%s_majoraxislength_growth_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
-pickle.dump(MCS_ccs_area_growth_all_points, open(general_outpath + specific_outpath + "%s_ccs_area_growth_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
-pickle.dump(MCS_ccs_area_growth_2hr_all_points, open(general_outpath + specific_outpath + "%s_ccs_area_growth_2hr_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
-pickle.dump(bulk_shear_0_3km, open(general_outpath + specific_outpath + "%s_bulk_shear_0_3km_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
-pickle.dump(bulk_shear_0_6km, open(general_outpath + specific_outpath + "%s_bulk_shear_0_6km_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
-pickle.dump(bulk_shear_2_6km, open(general_outpath + specific_outpath + "%s_bulk_shear_2_6km_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
-pickle.dump(q_850, open(general_outpath + specific_outpath + "%s_q_850_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
-pickle.dump(prop_area_SALLJ_all_points, open(general_outpath + specific_outpath + "%s_prop_area_SALLJ_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
-pickle.dump(median_SALLJ_max_wind_all_points, open(general_outpath + specific_outpath + "%s_median_SALLJ_max_wind_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
-pickle.dump(median_SALLJ_height_all_points, open(general_outpath + specific_outpath + "%s_median_SALLJ_height_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
-# Note: this could be improved by using a dict object
+## output arrays as pickles (.dat files)
+#pickle.dump(MCS_duration_all_points, open(general_outpath + specific_outpath + "%s_duration2_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(MCS_majoraxislength_growth_all_points, open(general_outpath + specific_outpath + "%s_majoraxislength_growth_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(MCS_ccs_area_growth_all_points, open(general_outpath + specific_outpath + "%s_ccs_area_growth_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(MCS_ccs_area_growth_2hr_all_points, open(general_outpath + specific_outpath + "%s_ccs_area_growth_2hr_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(bulk_shear_0_3km, open(general_outpath + specific_outpath + "%s_bulk_shear_0_3km_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(bulk_shear_0_6km, open(general_outpath + specific_outpath + "%s_bulk_shear_0_6km_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(bulk_shear_2_6km, open(general_outpath + specific_outpath + "%s_bulk_shear_2_6km_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(q_850, open(general_outpath + specific_outpath + "%s_q_850_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(MUCAPE, open(general_outpath + specific_outpath + "%s_MUCAPE_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+pickle.dump(wv_flux_850_v, open(general_outpath + specific_outpath + "%s_wv_flux_850_v_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+pickle.dump(q_flux_850_v, open(general_outpath + specific_outpath + "%s_q_flux_850_v_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+pickle.dump(q_flux_850, open(general_outpath + specific_outpath + "%s_q_flux_850_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(prop_area_SALLJ_all_points, open(general_outpath + specific_outpath + "%s_prop_area_SALLJ_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(median_SALLJ_max_wind_all_points, open(general_outpath + specific_outpath + "%s_median_SALLJ_max_wind_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(median_SALLJ_height_all_points, open(general_outpath + specific_outpath + "%s_median_SALLJ_height_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+## Note: this could be improved by using a dict object
     
