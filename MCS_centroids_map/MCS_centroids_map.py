@@ -104,7 +104,7 @@ MCS_init_area = 'largeArea1'
 SALLJ_search_area = '2deg4degOffset1degNFromCentroid'
 plot_SALLJ_search_area = True
 
-env_search_area = '0.75fromMCScentroid' # '0.75fromMCScentroid'
+env_search_area = '2.00fromMCScentroid' # '0.75fromMCScentroid', '2.00fromMCScentroid'
 plot_env_search_area = True
 
 ######### get MCS initation times and centroid locations #########
@@ -388,6 +388,15 @@ for count, (MCS_datetime, MCS_center_lon, MCS_center_lat) in enumerate(zip(MCS_d
 
             lat_top_right_env = MCS_center_lat + 0.75 
             lon_top_right_env = MCS_center_lon + 0.75
+            
+        elif env_search_area == '2.00fromMCScentroid':
+
+            # get lats/lons of region based on centroid
+            lat_bottom_left_env = MCS_center_lat - 2.00 
+            lon_bottom_left_env = MCS_center_lon - 2.00
+
+            lat_top_right_env = MCS_center_lat + 2.00 
+            lon_top_right_env = MCS_center_lon + 2.00
 
         else:
             print('Please enter valid env search area') # will throw error
