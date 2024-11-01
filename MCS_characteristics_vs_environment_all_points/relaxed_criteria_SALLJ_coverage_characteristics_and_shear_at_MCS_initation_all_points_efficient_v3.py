@@ -286,6 +286,9 @@ MUCAPE = []
 wv_flux_850_v = []
 q_flux_850 = []
 q_flux_850_v = []
+max_refl = []
+refl_coverage_grt0 = []
+refl_coverage_grt30 = []
 prop_area_SALLJ_all_points = []
 median_SALLJ_max_wind_all_points = []
 median_SALLJ_height_all_points = []
@@ -430,10 +433,13 @@ for count, (MCS_datetime, MCS_center_lon, MCS_center_lat) in enumerate(zip(MCS_d
     
     print('q_subset_level.shape', q_subset_level.shape)
     
+    ######### calculate MUCAPE #########
+    
     MCAPE_original = getvar(wrf_ncfile, 'cape_2d')[0][int(bottom_left_xy[1]):int(top_right_xy[1]),int(bottom_left_xy[0]):int(top_right_xy[0])]
     
     MUCAPE.append(np.array(MCAPE_original))
     
+    ######### calculate water vapor mass flux and q flux at 850 hPa #########
     
     v_850 = interplevel(v_original, pres, 850)
     v_850_ms = v_850 * 0.5144 # convert from kts to m/s
@@ -454,7 +460,22 @@ for count, (MCS_datetime, MCS_center_lon, MCS_center_lat) in enumerate(zip(MCS_d
     q_flux_850.append(np.array(q_total_flux_850))
     q_flux_850_v.append(np.array(qv_flux_850))
     
-    # create arrays of the same shape for MCS characteristics
+    ######### calculate max reflectivity and coverage ############
+    
+    radar_refl_max = getvar(wrf_ncfile, 'REFD_MAX')[int(bottom_left_xy[1]):int(top_right_xy[1]),int(bottom_left_xy[0]):int(top_right_xy[0])]
+    
+    max_refl.append(np.array(radar_refl_max))
+    
+    count_dBZ_grt0 = len(np.where(radar_refl_max > 0)[0])
+    
+    prop_dBZ_grt0 = (count_dBZ_grt0)/(radar_refl_max.size) 
+    refl_coverage_grt0.append(prop_dBZ_grt0)
+    
+    count_dBZ_grt30 = len(np.where(radar_refl_max > 30)[0])    
+    prop_dBZ_grt30 = (count_dBZ_grt30)/(radar_refl_max.size)  
+    refl_coverage_grt30.append(prop_dBZ_grt30)
+    
+    ######## create arrays of the same shape as environmental variables for MCS characteristics ########
     
     MCS_duration_all_points_one_time = np.empty_like(q_subset_level)
     MCS_duration_all_points_one_time[:] = MCS_duration_filtered[count]
@@ -817,9 +838,12 @@ specific_outpath = '%sarea_%s%s%s/data/' %(MCS_file_label, MCS_init_area, SALLJ_
 #pickle.dump(bulk_shear_2_6km, open(general_outpath + specific_outpath + "%s_bulk_shear_2_6km_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
 #pickle.dump(q_850, open(general_outpath + specific_outpath + "%s_q_850_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
 #pickle.dump(MUCAPE, open(general_outpath + specific_outpath + "%s_MUCAPE_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
-pickle.dump(wv_flux_850_v, open(general_outpath + specific_outpath + "%s_wv_flux_850_v_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
-pickle.dump(q_flux_850, open(general_outpath + specific_outpath + "%s_q_flux_850_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
-pickle.dump(q_flux_850_v, open(general_outpath + specific_outpath + "%s_q_flux_850_v_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(wv_flux_850_v, open(general_outpath + specific_outpath + "%s_wv_flux_850_v_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(q_flux_850, open(general_outpath + specific_outpath + "%s_q_flux_850_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(q_flux_850_v, open(general_outpath + specific_outpath + "%s_q_flux_850_v_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+pickle.dump(max_refl, open(general_outpath + specific_outpath + "%s_max_refl_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+pickle.dump(refl_coverage_grt0, open(general_outpath + specific_outpath + "%s_refl_coverage_grt0_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+pickle.dump(refl_coverage_grt30, open(general_outpath + specific_outpath + "%s_refl_coverage_grt30_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
 #pickle.dump(prop_area_SALLJ_all_points, open(general_outpath + specific_outpath + "%s_prop_area_SALLJ_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
 #pickle.dump(median_SALLJ_max_wind_all_points, open(general_outpath + specific_outpath + "%s_median_SALLJ_max_wind_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
 #pickle.dump(median_SALLJ_height_all_points, open(general_outpath + specific_outpath + "%s_median_SALLJ_height_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
@@ -835,6 +859,7 @@ bulk_shear_0_6km = np.concatenate([arr.flatten() for arr in bulk_shear_0_6km])
 bulk_shear_2_6km = np.concatenate([arr.flatten() for arr in bulk_shear_2_6km])
 q_850 = np.concatenate([arr.flatten() for arr in q_850])
 MUCAPE = np.concatenate([arr.flatten() for arr in MUCAPE])
+max_refl = np.concatenate([arr.flatten() for arr in max_refl])
 wv_flux_850_v = np.concatenate([arr.flatten() for arr in wv_flux_850_v])
 q_flux_850 = np.concatenate([arr.flatten() for arr in q_flux_850])
 q_flux_850_v = np.concatenate([arr.flatten() for arr in q_flux_850_v])
@@ -881,9 +906,10 @@ print('len(prop_area_SALLJ_all_points)', len(prop_area_SALLJ_all_points))
 #pickle.dump(bulk_shear_2_6km, open(general_outpath + specific_outpath + "%s_bulk_shear_2_6km_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
 #pickle.dump(q_850, open(general_outpath + specific_outpath + "%s_q_850_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
 #pickle.dump(MUCAPE, open(general_outpath + specific_outpath + "%s_MUCAPE_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
-pickle.dump(wv_flux_850_v, open(general_outpath + specific_outpath + "%s_wv_flux_850_v_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
-pickle.dump(q_flux_850_v, open(general_outpath + specific_outpath + "%s_q_flux_850_v_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
-pickle.dump(q_flux_850, open(general_outpath + specific_outpath + "%s_q_flux_850_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(wv_flux_850_v, open(general_outpath + specific_outpath + "%s_wv_flux_850_v_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(q_flux_850_v, open(general_outpath + specific_outpath + "%s_q_flux_850_v_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+#pickle.dump(q_flux_850, open(general_outpath + specific_outpath + "%s_q_flux_850_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+pickle.dump(max_refl, open(general_outpath + specific_outpath + "%s_max_refl_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
 #pickle.dump(prop_area_SALLJ_all_points, open(general_outpath + specific_outpath + "%s_prop_area_SALLJ_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
 #pickle.dump(median_SALLJ_max_wind_all_points, open(general_outpath + specific_outpath + "%s_median_SALLJ_max_wind_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
 #pickle.dump(median_SALLJ_height_all_points, open(general_outpath + specific_outpath + "%s_median_SALLJ_height_all_points%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
