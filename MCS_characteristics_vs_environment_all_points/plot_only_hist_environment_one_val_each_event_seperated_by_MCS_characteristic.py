@@ -29,9 +29,9 @@ MCS_init_area = 'large_area1'
 SALLJ_search_area = '2deg4degOffset1degNFromCentroid' # '2deg4degOffset1degNFromCentroid', '1deg3degBottomCentroid', '60-65W28-30SFixed'
 env_search_area = '2.00fromMCScentroid' # '0.75fromMCScentroid', '2.00fromMCScentroid'
 
-plot_rapid_growth_dist = True
-plot_slow_growth_dist = True
-plot_all_growth_dist = False
+plot_rapid_growth_dist = False
+plot_slow_growth_dist = False
+plot_all_growth_dist = True
 
 ##############################################################################
 
@@ -65,7 +65,9 @@ median_SALLJ_max_wind_all_points_byEvent = pickle.load( open(general_path + spec
 median_SALLJ_height_all_points_byEvent = pickle.load(open(general_path + specific_inpath + "%s_median_SALLJ_height_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
 MCS_q_850_all_points_byEvent = pickle.load( open(general_path + specific_inpath + "%s_q_850_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
 MCS_MUCAPE_all_points_byEvent = pickle.load( open(general_path + specific_inpath + "%s_MUCAPE_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
-MCS_wv_flux_850_all_points_byEvent = pickle.load( open(general_path + specific_inpath + "%s_wv_flux_850_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
+MCS_wv_flux_850_v_all_points_byEvent = pickle.load( open(general_path + specific_inpath + "%s_wv_flux_850_v_all_points_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
+MCS_refl_coverage_grt0_byEvent = pickle.load( open(general_path + specific_inpath + "%s_refl_coverage_grt0_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
+MCS_refl_coverage_grt30_byEvent = pickle.load( open(general_path + specific_inpath + "%s_refl_coverage_grt30_byEvent%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
 
 # calculate spread in variables and save them into 1D array (for MCS and SALLJ characteristics, first value is taken as does not vary spatially)
 
@@ -85,11 +87,11 @@ median_SALLJ_height_spreadByEvent =  np.array([arr[0,0] for arr in median_SALLJ_
 q_850_quart75ByEvent = np.array([np.percentile(arr, 75) for arr in MCS_q_850_all_points_byEvent])
 q_850_quart90ByEvent = np.array([np.percentile(arr, 90) for arr in MCS_q_850_all_points_byEvent])
 MCS_MUCAPE_quart90ByEvent = np.array([np.percentile(arr, 90) for arr in MCS_MUCAPE_all_points_byEvent])
-MCS_wv_flux_quart90ByEvent = np.array([np.percentile(arr, 90) for arr in MCS_wv_flux_850_all_points_byEvent])
+MCS_wv_flux_quart90ByEvent = np.array([np.percentile(arr, 90) for arr in MCS_wv_flux_850_v_all_points_byEvent])
 
 q_850_mean = np.array([np.nanmean(arr) for arr in MCS_q_850_all_points_byEvent])
 MCS_MUCAPE_mean = np.array([np.nanmean(arr) for arr in MCS_MUCAPE_all_points_byEvent])
-MCS_wv_flux_850_mean = np.array([np.nanmean(arr) for arr in MCS_wv_flux_850_all_points_byEvent])
+MCS_wv_flux_850_mean = np.array([np.nanmean(arr) for arr in MCS_wv_flux_850_v_all_points_byEvent])
 
 median_MCS_ccs_area_growth_filtered_spreadByEvent = np.nanmedian(MCS_ccs_area_growth_filtered_spreadByEvent)
 print(median_MCS_ccs_area_growth_filtered_spreadByEvent)
@@ -124,6 +126,7 @@ MCS_wv_flux_quart90ByEvent_mask1 = MCS_wv_flux_quart90ByEvent[mask1]
 q_850_mean_mask1 = q_850_mean[mask1]
 MCS_MUCAPE_mean_mask1 = MCS_MUCAPE_mean[mask1]
 MCS_wv_flux_850_mean_mask1 = MCS_wv_flux_850_mean[mask1]
+#MCS_refl_coverage_grt0_byEvent_mask1 = MCS_refl_coverage_grt0_byEvent[mask1]
 
 print('# rapid growth MCS', len(MCS_ccs_area_growth_filtered_2hr_spreadByEvent_mask1))
 
@@ -147,17 +150,18 @@ MCS_wv_flux_quart90ByEvent_mask2 = MCS_wv_flux_quart90ByEvent[mask2]
 q_850_mean_mask2 = q_850_mean[mask2]
 MCS_MUCAPE_mean_mask2 = MCS_MUCAPE_mean[mask2]
 MCS_wv_flux_850_mean_mask2 = MCS_wv_flux_850_mean[mask2]
+#MCS_refl_coverage_grt0_byEvent_mask2 = MCS_refl_coverage_grt0_byEvent[mask2]
 
 
 print('# slow growth MCS', len(MCS_ccs_area_growth_filtered_2hr_spreadByEvent_mask2))
 
 ############ Change variable plotting ############ 
 
-data_all_growth = MCS_wv_flux_850_mean
-data_rapid_growth = MCS_wv_flux_850_mean_mask1
-data_slow_growth = MCS_wv_flux_850_mean_mask2
-variable_name = 'MCS_wv_flux_850_mean' # q_850_spreadByEvent, bulk_shear_0_3km_spreadByEvent, MCS_MUCAPE_quart90ByEvent, MCS_wv_flux_quart90ByEvent, q_850_mean, MCS_MUCAPE_mean
-x_label = 'mean 850hPa wv flux by event' # 850hPa q spread by event
+data_all_growth = MCS_refl_coverage_grt30_byEvent
+#data_rapid_growth = MCS_refl_coverage_grt0_byEvent_mask1
+#data_slow_growth = MCS_refl_coverage_grt0_byEvent_mask2
+variable_name = 'MCS_refl_coverage_grt30_byEvent' # q_850_spreadByEvent, bulk_shear_0_3km_spreadByEvent, MCS_MUCAPE_quart90ByEvent, MCS_wv_flux_quart90ByEvent, q_850_mean, MCS_MUCAPE_mean
+x_label = 'refl coverage (dBZ > 30) by event' # 850hPa q spread by event
 
 ################################################## 
 
