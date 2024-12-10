@@ -104,11 +104,11 @@ offset_MCS_and_conditions = False
 
 hours_offset = -1
 
-MCS_init_area = 'Zhang_area' # 'large_area1', 'large_area2', 'Zhang_area', 'SDC_area1'
+MCS_init_area = 'large_area1' # 'large_area1', 'large_area2', 'Zhang_area', 'SDC_area1'
 
-SALLJ_search_area = '60-65W28-30SFixed' # '2deg4degOffset1degNFromCentroid', '1deg3degBottomCentroid', '60-65W28-30SFixed'
+SALLJ_search_area = '2deg4degOffset1degNFromCentroid' # '2deg4degOffset1degNFromCentroid', '1deg3degBottomCentroid', '60-65W28-30SFixed'
 
-env_search_area = '0.75fromMCScentroid' # '0.75fromMCScentroid', '2.00fromMCScentroid'
+env_search_area = '2.00fromMCScentroid' # '0.75fromMCScentroid', '2.00fromMCScentroid'
 
 ######### get MCS initation times and centroid locations #########
 
@@ -125,11 +125,37 @@ else:
 MCS_tracks_file_path = '/home/disk/monsoon/relampago/analysis//mcs_tracks/wrf/stats/%s' %(MCS_tracked_file)
 MCS_tracks_ncfile = Dataset(MCS_tracks_file_path,'r')
 
+MCS_status = np.array(MCS_tracks_ncfile.variables['mcs_status'])
+
+### find indicies of when MCS is first found (when MCS_status is first 1 or 2) ###
+    
+# Initialize a boolean array of the same shape, filled with False
+first_MCS_bol_array = np.zeros_like(MCS_status, dtype=bool)
+first_MCS_bol_array_plus1 = np.zeros_like(MCS_status, dtype=bool)
+first_MCS_bol_array_plus3 = np.zeros_like(MCS_status, dtype=bool)
+
+# Find the first occurrence of `1` in each row
+for i in range(MCS_status.shape[0]):
+    # Check if `1` is in the row
+    if 1 in MCS_status[i]:
+        first_one_index = np.where(MCS_status[i] == 1)[0][0]
+        first_MCS_bol_array[i, first_one_index] = True
+        
+        # creates boolean arrays shifted by one or three index times later
+        first_MCS_bol_array_plus1[i, first_one_index+1] = True
+        first_MCS_bol_array_plus3[i, first_one_index+3] = True
+
 # gets MCS times in byte format
 MCS_datetime_bytes = MCS_tracks_ncfile.variables['datetimestring']
 
+
+first_MCS_bol_array_3d = np.repeat(first_MCS_bol_array[:, :, np.newaxis], repeats=17, axis=2)
+
 # gets MCS iniation times still in byte format
-MCS_datetime_initiation_bytes = MCS_datetime_bytes[:,0,:]
+MCS_datetime_initiation_bytes = np.array(MCS_datetime_bytes)[first_MCS_bol_array_3d]
+
+# boolean mask flattened array so reshaping to orignal shape
+MCS_datetime_initiation_bytes = MCS_datetime_initiation_bytes.reshape(588, 17)
 
 # concatenates the bytes that make up one MCS initation time into a single byte string and decodes to a string
 MCS_datetime_initiation_str = np.array([bytes(bytes_for_one_time).decode('UTF-8') for bytes_for_one_time in MCS_datetime_initiation_bytes])
@@ -142,8 +168,8 @@ MCS_center_lons = MCS_tracks_ncfile.variables['meanlon']
 MCS_center_lats = MCS_tracks_ncfile.variables['meanlat']
 
 # get MCS initation center lons and lats
-MCS_center_lons_initiation = MCS_center_lons[:,0]
-MCS_center_lats_initiation = MCS_center_lats[:,0]
+MCS_center_lons_initiation = np.array(MCS_center_lons)[first_MCS_bol_array]
+MCS_center_lats_initiation = np.array(MCS_center_lats)[first_MCS_bol_array]
 
 #print(MCS_time_initation_str)
 #print(MCS_center_lons_initation)
@@ -189,7 +215,9 @@ condition_lon_max = MCS_center_lons_initiation <= lon_max
 
 ######### creat filter MCS tracks by MCS start type ######### 
 
-MCS_start_type = np.array(MCS_tracks_ncfile.variables['starttrackresult'])
+boolean_any = np.any(first_MCS_bol_array, axis=1) # create boolean that only preserves times when MCS_status == 1 (MCS found). First_MCS_bol_array makes the first value that finds an MCS as true, this one checks to see if any value in a row (single track) is true and only keeps those tracks that have a true (MCS found) at some time.
+
+MCS_start_type = np.array(MCS_tracks_ncfile.variables['starttrackresult'])[boolean_any]
 
 condition_start_type = MCS_start_type == 10
 
@@ -227,24 +255,26 @@ MCS_center_lats_initiation_filtered = MCS_center_lats_initiation[mask]
 num_MCS = len(MCS_datetime_initiation_str_filtered)
 print('# of MCSs that meet chosen conditions: ', num_MCS)
 
-MCS_duration = np.array(MCS_tracks_ncfile.variables['length'])
+MCS_duration = np.array(MCS_tracks_ncfile.variables['length'])[boolean_any]
 
 print('MCS_duration', MCS_duration)
 print('len(MCS_duration)', len(MCS_duration))
 
 MCS_duration_filtered = MCS_duration[mask]
 
-MCS_majoraxislength_init = np.array(MCS_tracks_ncfile.variables['majoraxislength'])[:,0]
+MCS_majoraxislength_init = np.array(MCS_tracks_ncfile.variables['majoraxislength'])[first_MCS_bol_array]
 
-MCS_majoraxislength_init_2 = np.array(MCS_tracks_ncfile.variables['majoraxislength'])[:,1]
+MCS_majoraxislength_init_2 = np.array(MCS_tracks_ncfile.variables['majoraxislength'])[first_MCS_bol_array_plus1]
 
 MCS_majoraxislength_growth = MCS_majoraxislength_init_2 - MCS_majoraxislength_init
 
 MCS_majoraxislength_growth_filtered = MCS_majoraxislength_growth[mask]
 
-MCS_ccs_area_init = np.array(MCS_tracks_ncfile.variables['ccs_area'])[:,0]
-MCS_ccs_area_init_2 = np.array(MCS_tracks_ncfile.variables['ccs_area'])[:,1]
-MCS_ccs_area_init_4 = np.array(MCS_tracks_ncfile.variables['ccs_area'])[:,3]
+MCS_ccs_area_init = np.array(MCS_tracks_ncfile.variables['ccs_area'])[first_MCS_bol_array]
+MCS_ccs_area_init_2 = np.array(MCS_tracks_ncfile.variables['ccs_area'])[first_MCS_bol_array_plus1]
+MCS_ccs_area_init_4 = np.array(MCS_tracks_ncfile.variables['ccs_area'])[first_MCS_bol_array_plus3]
+
+MCS_ccs_area_filtered = MCS_ccs_area_init[mask]
 
 MCS_ccs_area_growth = MCS_ccs_area_init_2 - MCS_ccs_area_init
 MCS_ccs_area_growth_filtered = MCS_ccs_area_growth[mask]
@@ -724,6 +754,7 @@ specific_outpath = '%sarea_%s%s%s/data/' %(MCS_file_label, MCS_init_area, SALLJ_
 
 # output arrays as pickles (.dat files)
 pickle.dump(MCS_duration_filtered, open(general_outpath + specific_outpath + "%s_duration2%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
+pickle.dump(MCS_ccs_area_filtered, open(general_outpath + specific_outpath + "%s_ccs_area%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
 pickle.dump(MCS_majoraxislength_growth_filtered, open(general_outpath + specific_outpath + "%s_majoraxislength_growth%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
 pickle.dump(MCS_ccs_area_growth_filtered, open(general_outpath + specific_outpath + "%s_ccs_area_growth%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))
 pickle.dump(MCS_ccs_area_growth_filtered_2hr, open(general_outpath + specific_outpath + "%s_ccs_area_growth_2hr%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "wb"))

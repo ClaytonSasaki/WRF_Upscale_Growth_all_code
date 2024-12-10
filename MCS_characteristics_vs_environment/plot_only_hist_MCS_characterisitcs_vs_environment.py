@@ -29,9 +29,9 @@ MCS_init_area = 'large_area1'
 SALLJ_search_area = '2deg4degOffset1degNFromCentroid' # '2deg4degOffset1degNFromCentroid', '1deg3degBottomCentroid', '60-65W28-30SFixed'
 env_search_area = '2.00fromMCScentroid' # '0.75fromMCScentroid', '2.00fromMCScentroid'
 
-plot_rapid_growth_dist = True
-plot_slow_growth_dist = True
-plot_all_growth_dist = False
+plot_rapid_growth_dist = False
+plot_slow_growth_dist = False
+plot_all_growth_dist = True
 
 ##############################################################################
 
@@ -55,6 +55,7 @@ specific_inpath = '%sarea_%s%s%s/data/' %(MCS_file_label, MCS_init_area, SALLJ_s
 MCS_prop_area_SALLJ = pickle.load(open(general_path + specific_inpath + "%s_prop_area_SALLJ%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
 #MCS_duration_filtered = pickle.load(open("MCS_duration%s.dat" %(filter_label), "rb")) # NOTE: this duration from 'mcs_length' variable is all zeros
 MCS_duration_filtered = pickle.load(open(general_path + specific_inpath + "%s_duration2%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
+MCS_ccs_area_filtered = pickle.load(open(general_path + specific_inpath + "%s_ccs_area%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
 MCS_majoraxislength_growth_filtered = pickle.load(open(general_path + specific_inpath + "%s_majoraxislength_growth%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
 MCS_ccs_area_growth_filtered = pickle.load(open(general_path + specific_inpath + "%s_ccs_area_growth%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
 MCS_ccs_area_growth_filtered_2hr = pickle.load(open(general_path + specific_inpath + "%s_ccs_area_growth_2hr%s_%s_%s_%s.dat" %(MCS_file_label, filter_label, MCS_init_area, SALLJ_search_area, env_search_area), "rb"))
@@ -69,7 +70,8 @@ condition_MCS_ccs_area_growth_filtered_2hr = MCS_ccs_area_growth_filtered_2hr >=
 
 mask1 = condition_MCS_ccs_area_growth_filtered_2hr
 
-MCS_prop_area_SALLJ_mask1 = MCS_prop_area_SALLJ[mask1]
+#MCS_prop_area_SALLJ_mask1 = MCS_prop_area_SALLJ[mask1]
+MCS_ccs_area_filtered_mask1 = MCS_ccs_area_filtered[mask1]
 #MCS_duration_filtered_mask1 = MCS_duration_filtered[mask1]
 #MCS_majoraxislength_growth_filtered_mask1 = MCS_majoraxislength_growth_filtered[mask1]
 #MCS_ccs_area_growth_filtered_mask1 = MCS_ccs_area_growth_filtered[mask1]
@@ -87,7 +89,8 @@ condition_MCS_ccs_area_growth_filtered_2hr = MCS_ccs_area_growth_filtered_2hr < 
 
 mask2 = condition_MCS_ccs_area_growth_filtered_2hr
 
-MCS_prop_area_SALLJ_mask2 = MCS_prop_area_SALLJ[mask2]
+#MCS_prop_area_SALLJ_mask2 = MCS_prop_area_SALLJ[mask2]
+MCS_ccs_area_filtered_mask2 = MCS_ccs_area_filtered[mask2]
 #MCS_duration_filtered_mask2 = MCS_duration_filtered[mask2]
 #MCS_majoraxislength_growth_filtered_mask2 = MCS_majoraxislength_growth_filtered[mask2]
 #MCS_ccs_area_growth_filtered_mask2 = MCS_ccs_area_growth_filtered[mask2]
@@ -101,11 +104,11 @@ MCS_ccs_area_growth_filtered_2hr_mask2 = MCS_ccs_area_growth_filtered_2hr[mask2]
 
 print('# slow growth MCS', len(MCS_ccs_area_growth_filtered_2hr_mask2))
 
-data_all_growth = MCS_prop_area_SALLJ
-data_rapid_growth = MCS_prop_area_SALLJ_mask1
-data_slow_growth = MCS_prop_area_SALLJ_mask2
-variable_name = 'MCS_prop_area_SALLJ' # MCS_prop_area_SALLJ, MCS_0_3km_shear, MCS_q_850 
-x_label = 'proportion of area w/SALLJ' # proportion of area w/SALLJ, bulk 0-3 km shear, 850-hPa q
+data_all_growth = MCS_ccs_area_filtered
+data_rapid_growth = MCS_ccs_area_filtered_mask1
+data_slow_growth = MCS_ccs_area_filtered_mask2
+variable_name = 'MCS_ccs_area_filtered' # MCS_prop_area_SALLJ, MCS_0_3km_shear, MCS_q_850 
+x_label = 'MCS ccs area (km^2)' # proportion of area w/SALLJ, bulk 0-3 km shear, 850-hPa q
 
 fig, ax = plt.subplots()
 
