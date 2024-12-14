@@ -10,7 +10,7 @@ Plots composite maps of q for all SALLJ times or NON-SALLJ times. Takes data cre
 """
 
 import matplotlib
-matplotlib.use('Agg') 
+matplotlib.use('Agg') # For non-interactive plotting (e.g., on a server)
 
 import cartopy.crs as crs
 from cartopy.feature import NaturalEarthFeature, LAND, OCEAN, COASTLINE, BORDERS, LAKES, RIVERS
@@ -29,13 +29,25 @@ import os
 from scipy import stats
 from scipy.interpolate import interp1d
 import xarray
-#import time
-
-# ------------------------- cmaps ------------------------------
-
 from wrf import (to_np, getvar, smooth2d, get_cartopy, cartopy_xlim,
                  cartopy_ylim, latlon_coords, interplevel, ll_to_xy, get_basemap, xy_to_ll, CoordPair, GeoBounds)
 
+# ------------------------- Custom Colormaps ------------------------------
+
+# used for contourf of terrain 
+def truncate_colormap2(cmap, minval=0.0, maxval=1.0, n=100):
+    new_cmap = colors.LinearSegmentedColormap.from_list('trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval), cmap(np.linspace(minval, maxval, n)))
+    return new_cmap
+
+arr = np.linspace(0, 50, 100).reshape((10, 10))
+fig, ax = plt.subplots(ncols=2)
+
+cmap2 = plt.get_cmap('gray')
+new_cmap2 = truncate_colormap(cmap2, 0.3, 0.75)
+ax[0].imshow(arr, interpolation='nearest', cmap=cmap2)
+ax[1].imshow(arr, interpolation='nearest', cmap=new_cmap2)
+
+# ----------------- Define Atmospheric Calculations ------------------
 
 def SatVap(tempc,phase="liquid"):
     """Calculate saturation vapour pressure over liquid water and/or ice.
@@ -90,66 +102,25 @@ def MixRatio(e,p):
 Rs_da=287.05          # Specific gas const for dry air, J kg^{-1} K^{-1}
 Rs_v=461.51           # Specific gas const for water vapour, J kg^{-1} K^{-1}
 
-# used for contourf of terrain 
-def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
-    new_cmap = colors.LinearSegmentedColormap.from_list('trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval), cmap(np.linspace(minval, maxval, n)))
-    return new_cmap
-
-arr = np.linspace(0, 50, 100).reshape((10, 10))
-fig, ax = plt.subplots(ncols=2)
-
-cmap = plt.get_cmap('terrain')
-new_cmap = truncate_colormap(cmap, 0.21, 1)
-ax[0].imshow(arr, interpolation='nearest', cmap=cmap)
-ax[1].imshow(arr, interpolation='nearest', cmap=new_cmap)
-
-# used for pcolormesh of wind
-def truncate_colormap2(cmap, minval=0.0, maxval=1.0, n=100):
-    new_cmap = colors.LinearSegmentedColormap.from_list('trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval), cmap(np.linspace(minval, maxval, n)))
-    return new_cmap
-
-arr = np.linspace(0, 50, 100).reshape((10, 10))
-fig, ax = plt.subplots(ncols=2)
-
-cmap2 = plt.get_cmap('gray')
-new_cmap2 = truncate_colormap(cmap2, 0.3, 0.75)
-ax[0].imshow(arr, interpolation='nearest', cmap=cmap2)
-ax[1].imshow(arr, interpolation='nearest', cmap=new_cmap2)
-
-# used for contour of wind
-#def truncate_colormap2(cmap, minval=0.0, maxval=1.0, n=100):
-#    new_cmap = colors.LinearSegmentedColormap.from_list('trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval), cmap(np.linspace(minval, maxval, n)))
-#    return new_cmap
-#
-#arr = np.linspace(0, 50, 100).reshape((10, 10))
-#fig, ax = plt.subplots(ncols=2)
-#
-#cmap2 = plt.get_cmap('gnuplot2')
-#new_cmap2 = truncate_colormap(cmap2, 0.2, 1.0)
-#ax[0].imshow(arr, interpolation='nearest', cmap=cmap2)
-#ax[1].imshow(arr, interpolation='nearest', cmap=new_cmap2)
-
-# ----------------- reading in file/plotting terrain -----------------
+# ----------------- File Paths and Settings -------------------------
 
 general_path = '/home/disk/meso-home/crs326/Documents/Research/WRF_Upscale_Growth_Paper/Composite_q_maps_by_SALLJ_presence/'
-
-# Open the NetCDF file
 path_wrf = '/home/disk/monsoon/relampago/raw/wrf/'
 
-#change the start and end days to be plotted
+# change the start and end days to be plotted
 start_date = 20181101
 end_date = 20190430
 
-# get dates from times to only run for correct day folders
+# convert dates to datetime objects to only run for correct day folders
 input_start_day = pd.to_datetime(str(start_date), format='%Y%m%d', errors='ignore')
 input_end_day = pd.to_datetime(str(end_date), format='%Y%m%d', errors='ignore')
 
+# define SALLJ presence status
 SALLJ_presence = 'SALLJ' # SALLJ or noSALLJ
-
 SALLJ_noSALLJ_location = 'VMRS'
 
+# define plotted variables
 plotted_var = '850hPa_q'
-
 mean_median = 'mean'
 
 ################################# plot #################################
@@ -158,7 +129,7 @@ lats = pickle.load(open(general_path + "data/lats.dat", "rb"))
 lons = pickle.load(open(general_path + "data/lons.dat", "rb"))
 cart_proj = pickle.load(open(general_path + "data/cart_proj.dat", "rb"))
 
-# Create a figure
+# Create the figure
 fig = plt.figure(figsize=(12,6))
 # Set the GeoAxes to the projection used by WRF
 ax = plt.axes(projection=cart_proj)
