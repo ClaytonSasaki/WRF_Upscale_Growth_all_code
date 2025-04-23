@@ -1,6 +1,8 @@
-# WRF_Upscale_Growth_Paper
+# WRF_Upscale_Growth_all_code
 
 Repository relating to the final chapter of my Ph.D. work using a 6.5-month PNNL WRF run to examine differences in environments that support different rates of convective upscale growth (i.e., the organization of storms into larger systems) in Central Argentina. This chapter expands upon and confirms hypotheses from case studies of observed upscale growth.
+
+### Note: This repository has all of the code (even that not relating to the paper figures). See 'WRF_Upscale_Growth_Paper'
 
 ### ⚠️ Documentation Forecast: Cloudy with a Chance of Confusion ⚠️  
 This code is only lightly commented. If you have any questions or need clarification, feel free to reach out to me. I'm happy to help! Will try to clean up in the next few months...
